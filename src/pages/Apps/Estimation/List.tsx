@@ -33,11 +33,21 @@ const List = () => {
   }, [dispatch]);
 
   // --- FETCH INVOICES FROM API ---
-  
+  const currencySymbols: Record<string, string> = {
+  "USD": "$",
+  "USD - US Dollar": "$",
+  "GBP - British Pound": "£",
+  "IDR - Indonesian Rupiah": "Rp",
+  "INR - Indian Rupee": "₹",
+  "BRL - Brazilian Real": "R$",
+  "EUR - Germany (Euro)": "€",
+  "TRY - Turkish Lira": "₺",
+};
+
 
   const fetchInvoices = async () => {
   try {
-    const res = await axios.get('https://newadmin-u8tx.onrender.com/api/invoices');
+    const res = await axios.get('https://newadmin-u8tx.onrender.com/api/estimation');
     const data = res.data.invoices || [];
 
     // Map API response to table-friendly format
@@ -50,7 +60,7 @@ const List = () => {
         email: inv.billing?.email || 'N/A',
         date: inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : 'N/A',
         amount: totalAmount,
-         currency: inv.currency || "USD",   // ✅ add currency
+         currency: inv.currency || "USD", 
         status: { tooltip: 'Pending', color: 'danger' }, // or map real status if you have
       };
     });
@@ -77,7 +87,7 @@ const deleteRow = async (id: string | null = null) => {
   try {
     if (id) {
       // DELETE single invoice
-      await axios.delete(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`);
+      await axios.delete(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`);
       const updated = items.filter((item) => item.id !== id);
       setItems(updated);
       setInitialRecords(updated);
@@ -87,7 +97,7 @@ const deleteRow = async (id: string | null = null) => {
     } else if (selectedRecords.length) {
       // DELETE multiple selected invoices
       for (const row of selectedRecords) {
-        await axios.delete(`https://newadmin-u8tx.onrender.com/api/invoices/${row.id}`);
+        await axios.delete(`https://newadmin-u8tx.onrender.com/api/estimation/${row.id}`);
       }
       const ids = selectedRecords.map((d: any) => d.id);
       const updated = items.filter((item) => !ids.includes(item.id));
@@ -104,16 +114,6 @@ const deleteRow = async (id: string | null = null) => {
   }
 };
 
-const currencySymbols: Record<string, string> = {
-  "USD": "$",
-  "USD - US Dollar": "$",
-  "GBP - British Pound": "£",
-  "IDR - Indonesian Rupiah": "Rp",
-  "INR - Indian Rupee": "₹",
-  "BRL - Brazilian Real": "R$",
-  "EUR - Germany (Euro)": "€",
-  "TRY - Turkish Lira": "₺",
-};
 
   // --- PAGINATION ---
   useEffect(() => {
@@ -158,7 +158,7 @@ const currencySymbols: Record<string, string> = {
               <IconTrashLines />
               Delete
             </button>
-            <Link to="/apps/invoice/add" className="btn btn-primary gap-2">
+            <Link to="/apps/estimation/add" className="btn btn-primary gap-2">
               <IconPlus />
               Add New
             </Link>
@@ -183,7 +183,7 @@ const currencySymbols: Record<string, string> = {
                 accessor: 'invoice',
                 sortable: true,
                 render: ({ invoice }) => (
-                  <NavLink to="/apps/invoice/preview">
+                  <NavLink to="/apps/estimation/preview">
                     <div className="text-primary underline hover:no-underline font-semibold">{`#${invoice}`}</div>
                   </NavLink>
                 ),
@@ -229,12 +229,12 @@ const currencySymbols: Record<string, string> = {
                 textAlignment: 'center',
                 render: ({ id }) => (
                   <div className="flex gap-4 items-center w-max mx-auto">
-                    <NavLink to={`/apps/invoice/edit/${id}`} className="flex hover:text-info">
+                    <NavLink to={`/apps/estimation/edit/${id}`} className="flex hover:text-info">
                       <IconEdit className="w-4.5 h-4.5" />
                     </NavLink>
-                    <NavLink to={`/apps/invoice/preview/${id}`} className="btn btn-primary w-full gap-2">
+                    {/* <NavLink to={`/apps/estimation/preview/${id}`} className="btn btn-primary w-full gap-2">
                      <IconEye className="w-4.5 h-4.5" />
-                    </NavLink>
+                    </NavLink> */}
                     <button type="button" className="flex hover:text-danger" onClick={() => deleteRow(id)}>
                       <IconTrashLines />
                     </button>

@@ -19,7 +19,7 @@ const Preview = () => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`)
+      .get(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`)
       .then((res) => {
         if (res.data.success && res.data.invoice) {
           setInvoice(res.data.invoice);
@@ -34,39 +34,11 @@ const Preview = () => {
 
   if (!invoice) return <div>Loading...</div>;
 
-  // ✅ currency fallback
-  // const currency = invoice.currency || "USD";
-  const currencySymbols: Record<string, string> = {
-  "USD": "$",
-  "USD - US Dollar": "$",
-  "GBP - British Pound": "£",
-  "IDR - Indonesian Rupiah": "Rp",
-  "INR": "₹",
-  "INR - Indian Rupee": "₹",
-  "BRL - Brazilian Real": "R$",
-  "EUR - Germany (Euro)": "€",
-  "TRY - Turkish Lira": "₺",
-};
-
-// 2️⃣ Get symbol safely
-const getCurrencySymbol = (currency: string) => {
-  return currencySymbols[currency] || currency; // fallback अगर mapping नहीं है तो raw value
-};
-
-// 3️⃣ Usage in Totals
-const currency = getCurrencySymbol(invoice.currency);
-  // const currency = invoice.currency?.split(" - ")[0];
-
-
   const subtotal = invoice.items?.reduce(
     (acc: number, item: any) => acc + item.amount * item.quantity,
     0
   );
-  const total =
-    subtotal +
-    (subtotal * invoice.tax) / 100 +
-    invoice.shippingCharge -
-    (subtotal * invoice.discount) / 100;
+  const total = subtotal + (subtotal * invoice.tax) / 100 + invoice.shippingCharge - (subtotal * invoice.discount) / 100;
 
   return (
     <div>
@@ -90,15 +62,15 @@ const currency = getCurrencySymbol(invoice.currency);
         <div className="flex justify-between flex-wrap gap-4 px-4">
           <div className="text-2xl font-semibold uppercase">Invoice</div>
           <div className="shrink-0">
-            <img src="/assets/images/cybblackpink.png" alt="img" className="w-14 ltr:ml-auto rtl:mr-auto" />
+            <img src="/assets/images/logo.svg" alt="img" className="w-14 ltr:ml-auto rtl:mr-auto" />
           </div>
         </div>
 
         <div className="ltr:text-right rtl:text-left px-4">
           <div className="space-y-1 mt-6 text-white-dark">
-            <div>G-9/85,Sangam Vihar New Delhi-110080</div>
-              <div>info@cybite.in</div>
-              <div>+91 8210543772</div>
+            <div>13 Tetrick Road, Cypress Gardens, Florida, 33884, US</div>
+            <div>vristo@gmail.com</div>
+            <div>+1 (070) 123-4567</div>
           </div>
         </div>
 
@@ -173,12 +145,8 @@ const currency = getCurrencySymbol(invoice.currency);
                   <td>{index + 1}</td>
                   <td>{item.title || '-'}</td>
                   <td>{item.quantity}</td>
-                  <td className="ltr:text-right rtl:text-left">
-                    {currency} {item.amount}
-                  </td>
-                  <td className="ltr:text-right rtl:text-left">
-                    {currency} {item.amount * item.quantity}
-                  </td>
+                  <td className="ltr:text-right rtl:text-left">${item.amount}</td>
+                  <td className="ltr:text-right rtl:text-left">${item.amount * item.quantity}</td>
                 </tr>
               ))}
             </tbody>
@@ -191,23 +159,23 @@ const currency = getCurrencySymbol(invoice.currency);
           <div className="ltr:text-right rtl:text-left space-y-2">
             <div className="flex items-center">
               <div className="flex-1">Subtotal</div>
-              <div className="w-[37%]">{currency} {subtotal}</div>
+              <div className="w-[37%]">${subtotal}</div>
             </div>
             <div className="flex items-center">
               <div className="flex-1">Tax</div>
-              <div className="w-[37%]">{currency} {(subtotal * invoice.tax) / 100}</div>
+              <div className="w-[37%]">${(subtotal * invoice.tax) / 100}</div>
             </div>
             <div className="flex items-center">
               <div className="flex-1">Shipping Rate</div>
-              <div className="w-[37%]">{currency} {invoice.shippingCharge}</div>
+              <div className="w-[37%]">${invoice.shippingCharge}</div>
             </div>
             <div className="flex items-center">
               <div className="flex-1">Discount</div>
-              <div className="w-[37%]">{currency} {(subtotal * invoice.discount) / 100}</div>
+              <div className="w-[37%]">${(subtotal * invoice.discount) / 100}</div>
             </div>
             <div className="flex items-center font-semibold text-lg">
               <div className="flex-1">Grand Total</div>
-              <div className="w-[37%]">{currency} {total}</div>
+              <div className="w-[37%]">${total}</div>
             </div>
           </div>
         </div>

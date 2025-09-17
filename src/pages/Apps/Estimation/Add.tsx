@@ -15,7 +15,8 @@ const Add = () => {
     const [items, setItems] = useState<any>([
         { id: 1, title: '', description: '', rate: 0, quantity: 0, amount: 0 },
     ]);
-const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
+     const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
+
     useEffect(() => {
         dispatch(setPageTitle('Invoice Add'));
     }, [dispatch]);
@@ -29,7 +30,7 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
         'EUR - Germany (Euro)',
         'TRY - Turkish Lira',
     ];
- const currencySymbols: any = {
+    const currencySymbols: any = {
         "USD - US Dollar": "$",
         "GBP - British Pound": "£",
         "IDR - Indonesian Rupiah": "Rp",
@@ -38,6 +39,7 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
         "EUR - Germany (Euro)": "€",
         "TRY - Turkish Lira": "₺",
     };
+
     const addItem = () => {
         let maxId = items.length
             ? items.reduce((max: number, i: any) => (i.id > max ? i.id : max), items[0].id)
@@ -92,9 +94,9 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
     };
 
     try {
-        const res = await axios.post('https://newadmin-u8tx.onrender.com/api/invoices', data);
+        const res = await axios.post('https://newadmin-u8tx.onrender.com/api/estimation', data);
         if (res.data.success) {
-            alert('Invoice saved! ID: ' + res.data.invoice._id);
+            alert('Estimation saved! ID: ' + res.data.invoice._id);
         }
     } catch (err) {
         console.error(err);
@@ -114,9 +116,9 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
                             <img src="/assets/images/cybblackpink.png" alt="img" className="w-14" />
                         </div>
                         <div className="space-y-1 mt-6 text-gray-500 dark:text-gray-400">
-                            <div>G-9/85,Sangam Vihar New Delhi-110080</div>
-                            <div>info@cybite.in</div>
-                            <div>+91 8210543772</div>
+                         <div>G-9/85,Sangam Vihar New Delhi-110080</div>
+                        <div>info@cybite.in</div>
+                        <div>+91 8210543772</div>
                         </div>
                     </div>
                     <div className="lg:w-1/2 w-full lg:max-w-fit">
@@ -215,7 +217,7 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
                                             />
                                         </td>
                                         <td>
-                                            <input
+                                            <input 
                                                 type="number"
                                                 className="form-input w-32"
                                                 placeholder="Price"
@@ -224,7 +226,9 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
                                                 onChange={(e) => changeQuantityPrice('price', e.target.value, item.id)}
                                             />
                                         </td>
-                                        {currencySymbols[selectedCurrency]}{item.quantity * item.amount}
+                                         <td>
+                                            {currencySymbols[selectedCurrency]}{item.quantity * item.amount}
+                                        </td>
                                         <td>
                                             <button type="button" onClick={() => removeItem(item)}>
                                                 <IconX className="w-5 h-5" />
@@ -255,8 +259,8 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
             <div className="xl:w-96 w-full xl:mt-0 mt-6">
                 <div className="panel mb-5">
                     <label htmlFor="currency">Currency</label>
-                    <select id="currency" name="currency" value={selectedCurrency}
-                        onChange={(e) => setSelectedCurrency(e.target.value)} className="form-select">
+                    <select id="currency" name="currency"  value={selectedCurrency}
+                        onChange={(e) => setSelectedCurrency(e.target.value)}  className="form-select">
                         {currencyList.map((i) => (
                             <option key={i}>{i}</option>
                         ))}

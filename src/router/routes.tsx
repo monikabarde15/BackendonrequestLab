@@ -4,16 +4,35 @@ const Analytics = lazy(() => import('../pages/Analytics'));
 const Finance = lazy(() => import('../pages/Finance'));
 const Crypto = lazy(() => import('../pages/Crypto'));
 const Todolist = lazy(() => import('../pages/Apps/Todolist'));
+const Blogs = lazy(() => import('../pages/Apps/Blogs'));
+
 const Mailbox = lazy(() => import('../pages/Apps/Mailbox'));
 const Notes = lazy(() => import('../pages/Apps/Notes'));
 const Contacts = lazy(() => import('../pages/Apps/Contacts'));
 const Chat = lazy(() => import('../pages/Apps/Chat'));
 const Scrumboard = lazy(() => import('../pages/Apps/Scrumboard'));
 const Calendar = lazy(() => import('../pages/Apps/Calendar'));
+
 const List = lazy(() => import('../pages/Apps/Invoice/List'));
 const Preview = lazy(() => import('../pages/Apps/Invoice/Preview'));
 const Add = lazy(() => import('../pages/Apps/Invoice/Add'));
 const Edit = lazy(() => import('../pages/Apps/Invoice/Edit'));
+//Employee
+const EmployeeList = lazy(() => import('../pages/Apps/employee/List'));
+const EmployeePreview = lazy(() => import('../pages/Apps/employee/Preview'));
+const EmployeeAdd = lazy(() => import('../pages/Apps/employee/Add'));
+const EmployeeEdit = lazy(() => import('../pages/Apps/employee/Edit'));
+
+const EstimationList = lazy(() => import('../pages/Apps/Estimation/List'));
+const EstimationPreview = lazy(() => import('../pages/Apps/Estimation/Preview'));
+const EstimationAdd = lazy(() => import('../pages/Apps/Estimation/Add'));
+const EstimationEdit = lazy(() => import('../pages/Apps/Estimation/Edit'));
+
+const ExpensesList = lazy(() => import('../pages/Apps/expenses/List'));
+const ExpensesPreview = lazy(() => import('../pages/Apps/expenses/Preview'));
+const ExpensesAdd = lazy(() => import('../pages/Apps/expenses/Add'));
+const ExpensesEdit = lazy(() => import('../pages/Apps/expenses/Edit'));
+
 const Tabs = lazy(() => import('../pages/Components/Tabs'));
 const Accordians = lazy(() => import('../pages/Components/Accordians'));
 const Modals = lazy(() => import('../pages/Components/Modals'));
@@ -129,6 +148,10 @@ const routes = [
         path: '/apps/todolist',
         element: <Todolist />,
     },
+     {
+        path: '/apps/Blogs',
+        element: <Blogs />,
+    },
     {
         path: '/apps/notes',
         element: <Notes />,
@@ -145,7 +168,32 @@ const routes = [
         path: '/apps/invoice/list',
         element: <List />,
     },
-    // Apps page
+    {
+        path: '/apps/expenses/list',
+        element: <ExpensesList />,
+    },
+    {
+        path: '/apps/Estimation/list',
+        element: <EstimationList />,
+    },
+    //Employee
+    {
+        path: '/apps/employee/list',
+        element: <EmployeeList />,
+    },
+    {
+        path: '/apps/employee/add',
+        element: <EmployeeAdd />,
+    },
+    {
+        path: '/apps/employee/edit/:id',
+        element: <EmployeeEdit />,
+    },
+    {
+        path: '/apps/employee/Preview/:id',
+        element: <EmployeePreview />,
+    },
+    // Apps page//
     {
         path: '/apps/chat',
         element: <Chat />,
@@ -160,7 +208,7 @@ const routes = [
     },
     // preview page
     {
-        path: '/apps/invoice/preview',
+        path: '/apps/invoice/preview/:id',
         element: <Preview />,
     },
     {
@@ -168,8 +216,28 @@ const routes = [
         element: <Add />,
     },
     {
-        path: '/apps/invoice/edit',
+        path: '/apps/invoice/edit/:id',
         element: <Edit />,
+    },
+    {
+        path: '/apps/Estimation/add',
+        element: <EstimationAdd />,
+    },
+    {
+        path: '/apps/Estimation/edit/:id',
+        element: <EstimationEdit />,
+    },
+    {
+        path: '/apps/expenses/preview/:id',
+        element: <ExpensesPreview/>,
+    },
+    {
+        path: '/apps/expenses/add',
+        element: <ExpensesAdd />,
+    },
+    {
+        path: '/apps/expenses/edit/:id',
+        element: <ExpensesEdit />,
     },
     // components page
     {

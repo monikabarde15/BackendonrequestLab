@@ -57,7 +57,7 @@ const Edit = () => {
   useEffect(() => {
     if (!id) return;
 
-    axios.get(`http://localhost:5000/api/invoices/${id}`)
+    axios.get(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`)
       .then(res => {
         if (res.data.success && res.data.invoice) {
           const inv = res.data.invoice;
@@ -129,9 +129,9 @@ const Edit = () => {
       paymentMethod,
     };
 
-    axios.put(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`, payload)
+    axios.put(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`, payload)
       .then(res => {
-        if (res.data.success) alert('Invoice updated successfully!');
+        if (res.data.success) alert('Estimation updated successfully!');
         else alert('Failed to update invoice!');
       })
       .catch(err => {
@@ -153,7 +153,7 @@ const Edit = () => {
           <div className="mb-6 lg:w-1/2 w-full">
             <img src="/assets/images/cybblackpink.png" alt="logo" className="w-14" />
             <div className="space-y-1 mt-6 text-gray-500 dark:text-gray-400">
-             <div>G-9/85,Sangam Vihar New Delhi-110080</div>
+              <div>G-9/85,Sangam Vihar New Delhi-110080</div>
               <div>info@cybite.in</div>
               <div>+91 8210543772</div>
             </div>
@@ -282,7 +282,7 @@ const Edit = () => {
               <div className="flex justify-between">Shipping Rate({currencySymbols[selectedCurrency]}) <span>{currencySymbols[selectedCurrency]}{shippingCharge.toFixed(2)}</span></div>
               <div className="flex justify-between">
                 Discount({discount}%) 
-                 <span>
+                <span>
                   {currencySymbols[selectedCurrency]}
                   {(subtotal * discount/100).toFixed(2)}</span></div>
               <div className="flex justify-between font-semibold">Total 

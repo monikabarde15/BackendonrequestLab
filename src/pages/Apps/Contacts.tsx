@@ -13,15 +13,15 @@ import IconInstagram from '../../components/Icon/IconInstagram';
 import IconLinkedin from '../../components/Icon/IconLinkedin';
 import IconTwitter from '../../components/Icon/IconTwitter';
 import IconX from '../../components/Icon/IconX';
+import axios from 'axios';
+
+const API_URL = "https://newadmin-u8tx.onrender.com/api/contact";
 
 const Contacts = () => {
-    const dispatch = useDispatch();
-    useEffect(() => {
-        dispatch(setPageTitle('Contacts'));
-    });
-    const [addContactModal, setAddContactModal] = useState<any>(false);
+ const dispatch = useDispatch();
+    const [addContactModal, setAddContactModal] = useState(false);
+    const [value, setValue] = useState('list');
 
-    const [value, setValue] = useState<any>('list');
     const [defaultParams] = useState({
         id: null,
         name: '',
@@ -31,250 +31,75 @@ const Contacts = () => {
         location: '',
     });
 
-    const [params, setParams] = useState<any>(JSON.parse(JSON.stringify(defaultParams)));
+    const [params, setParams] = useState({ ...defaultParams });
+    const [search, setSearch] = useState('');
+    const [contactList, setContactList] = useState<any[]>([]);
+    const [filteredItems, setFilteredItems] = useState<any[]>([]);
+
+    // Page title and fetch contacts
+    useEffect(() => {
+        dispatch(setPageTitle('Contacts'));
+        fetchContacts();
+    }, [dispatch]);
+
+    // Fetch all contacts
+   const fetchContacts = async () => {
+    try {
+        const response = await axios.get(API_URL);
+
+        // API array "data" key ke andar bhej rahi hai
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+
+        setContactList(data);
+        setFilteredItems(data);
+    } catch (err) {
+        console.error(err);
+        showMessage('Failed to fetch contacts', 'error');
+    }
+};
+
+
+    // Search filter
+    useEffect(() => {
+        setFilteredItems(
+            contactList.filter(contact => contact.firstName.toLowerCase().includes(search.toLowerCase()))
+        );
+    }, [search, contactList]);
 
     const changeValue = (e: any) => {
         const { value, id } = e.target;
         setParams({ ...params, [id]: value });
     };
 
-    const [search, setSearch] = useState<any>('');
-    const [contactList] = useState<any>([
-        {
-            id: 1,
-            path: 'profile-35.png',
-            name: 'Alan Green',
-            role: 'Web Developer',
-            email: 'alan@mail.com',
-            location: 'Boston, USA',
-            phone: '+1 202 555 0197',
-            posts: 25,
-            followers: '5K',
-            following: 500,
-        },
-        {
-            id: 2,
-            path: 'profile-35.png',
-            name: 'Linda Nelson',
-            role: 'Web Designer',
-            email: 'linda@mail.com',
-            location: 'Sydney, Australia',
-            phone: '+1 202 555 0170',
-            posts: 25,
-            followers: '21.5K',
-            following: 350,
-        },
-        {
-            id: 3,
-            path: 'profile-35.png',
-            name: 'Lila Perry',
-            role: 'UX/UI Designer',
-            email: 'lila@mail.com',
-            location: 'Miami, USA',
-            phone: '+1 202 555 0105',
-            posts: 20,
-            followers: '21.5K',
-            following: 350,
-        },
-        {
-            id: 4,
-            path: 'profile-35.png',
-            name: 'Andy King',
-            role: 'Project Lead',
-            email: 'andy@mail.com',
-            location: 'Tokyo, Japan',
-            phone: '+1 202 555 0194',
-            posts: 25,
-            followers: '21.5K',
-            following: 300,
-        },
-        {
-            id: 5,
-            path: 'profile-35.png',
-            name: 'Jesse Cory',
-            role: 'Web Developer',
-            email: 'jesse@mail.com',
-            location: 'Edinburgh, UK',
-            phone: '+1 202 555 0161',
-            posts: 30,
-            followers: '20K',
-            following: 350,
-        },
-        {
-            id: 6,
-            path: 'profile-35.png',
-            name: 'Xavier',
-            role: 'UX/UI Designer',
-            email: 'xavier@mail.com',
-            location: 'New York, USA',
-            phone: '+1 202 555 0155',
-            posts: 25,
-            followers: '21.5K',
-            following: 350,
-        },
-        {
-            id: 7,
-            path: 'profile-35.png',
-            name: 'Susan',
-            role: 'Project Manager',
-            email: 'susan@mail.com',
-            location: 'Miami, USA',
-            phone: '+1 202 555 0118',
-            posts: 40,
-            followers: '21.5K',
-            following: 350,
-        },
-        {
-            id: 8,
-            path: 'profile-35.png',
-            name: 'Raci Lopez',
-            role: 'Web Developer',
-            email: 'traci@mail.com',
-            location: 'Edinburgh, UK',
-            phone: '+1 202 555 0135',
-            posts: 25,
-            followers: '21.5K',
-            following: 350,
-        },
-        {
-            id: 9,
-            path: 'profile-35.png',
-            name: 'Steven Mendoza',
-            role: 'HR',
-            email: 'sokol@verizon.net',
-            location: 'Monrovia, US',
-            phone: '+1 202 555 0100',
-            posts: 40,
-            followers: '21.8K',
-            following: 300,
-        },
-        {
-            id: 10,
-            path: 'profile-35.png',
-            name: 'James Cantrell',
-            role: 'Web Developer',
-            email: 'sravani@comcast.net',
-            location: 'Michigan, US',
-            phone: '+1 202 555 0134',
-            posts: 100,
-            followers: '28K',
-            following: 520,
-        },
-        {
-            id: 11,
-            path: 'profile-35.png',
-            name: 'Reginald Brown',
-            role: 'Web Designer',
-            email: 'drhyde@gmail.com',
-            location: 'Entrimo, Spain',
-            phone: '+1 202 555 0153',
-            posts: 35,
-            followers: '25K',
-            following: 500,
-        },
-        {
-            id: 12,
-            path: 'profile-35.png',
-            name: 'Stacey Smith',
-            role: 'Chief technology officer',
-            email: 'maikelnai@optonline.net',
-            location: 'Lublin, Poland',
-            phone: '+1 202 555 0115',
-            posts: 21,
-            followers: '5K',
-            following: 200,
-        },
-    ]);
-
-    const [filteredItems, setFilteredItems] = useState<any>(contactList);
-
-    useEffect(() => {
-        setFilteredItems(() => {
-            return contactList.filter((item: any) => {
-                return item.name.toLowerCase().includes(search.toLowerCase());
-            });
-        });
-    }, [search, contactList]);
-
-    const saveUser = () => {
-        if (!params.name) {
-            showMessage('Name is required.', 'error');
-            return true;
-        }
-        if (!params.email) {
-            showMessage('Email is required.', 'error');
-            return true;
-        }
-        if (!params.phone) {
-            showMessage('Phone is required.', 'error');
-            return true;
-        }
-        if (!params.role) {
-            showMessage('Occupation is required.', 'error');
-            return true;
-        }
-
-        if (params.id) {
-            //update user
-            let user: any = filteredItems.find((d: any) => d.id === params.id);
-            user.name = params.name;
-            user.email = params.email;
-            user.phone = params.phone;
-            user.role = params.role;
-            user.location = params.location;
-        } else {
-            //add user
-            let maxUserId = filteredItems.length ? filteredItems.reduce((max: any, character: any) => (character.id > max ? character.id : max), filteredItems[0].id) : 0;
-
-            let user = {
-                id: maxUserId + 1,
-                path: 'profile-35.png',
-                name: params.name,
-                email: params.email,
-                phone: params.phone,
-                role: params.role,
-                location: params.location,
-                posts: 20,
-                followers: '5K',
-                following: 500,
-            };
-            filteredItems.splice(0, 0, user);
-            //   searchContacts();
-        }
-
-        showMessage('User has been saved successfully.');
-        setAddContactModal(false);
-    };
-
+    // Save (Add or Update) contact
+   
     const editUser = (user: any = null) => {
-        const json = JSON.parse(JSON.stringify(defaultParams));
-        setParams(json);
-        if (user) {
-            let json1 = JSON.parse(JSON.stringify(user));
-            setParams(json1);
-        }
+        setParams(user ? { ...user } : { ...defaultParams });
         setAddContactModal(true);
     };
 
-    const deleteUser = (user: any = null) => {
-        setFilteredItems(filteredItems.filter((d: any) => d.id !== user.id));
-        showMessage('User has been deleted successfully.');
-    };
+    const deleteUser = async (user: any) => {
+    try {
+        await axios.delete(`${API_URL}/${user._id}`);
+        setContactList(contactList.filter(c => c._id !== user._id));
+        showMessage('User deleted successfully!');
+    } catch (err) {
+        console.error(err);
+        showMessage('Failed to delete user', 'error');
+    }
+};
 
-    const showMessage = (msg = '', type = 'success') => {
-        const toast: any = Swal.mixin({
+
+    const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+        Swal.fire({
             toast: true,
             position: 'top',
             showConfirmButton: false,
-            timer: 3000,
-            customClass: { container: 'toast' },
-        });
-        toast.fire({
+            timer: 2500,
             icon: type,
             title: msg,
-            padding: '10px 20px',
         });
-    };
+    };  
 
     return (
         <div>
@@ -283,10 +108,10 @@ const Contacts = () => {
                 <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
                     <div className="flex gap-3">
                         <div>
-                            <button type="button" className="btn btn-primary" onClick={() => editUser()}>
+                            {/* <button type="button" className="btn btn-primary" onClick={() => editUser()}>
                                 <IconUserPlus className="ltr:mr-2 rtl:ml-2" />
                                 Add Contact
-                            </button>
+                            </button> */}
                         </div>
                         <div>
                             <button type="button" className={`btn btn-outline-primary p-2 ${value === 'list' && 'bg-primary text-white'}`} onClick={() => setValue('list')}>
@@ -315,49 +140,28 @@ const Contacts = () => {
                                 <tr>
                                     <th>Name</th>
                                     <th>Email</th>
-                                    <th>Location</th>
                                     <th>Phone</th>
                                     <th className="!text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredItems.map((contact: any) => {
-                                    return (
-                                        <tr key={contact.id}>
-                                            <td>
-                                                <div className="flex items-center w-max">
-                                                    {contact.path && (
-                                                        <div className="w-max">
-                                                            <img src={`/assets/images/${contact.path}`} className="h-8 w-8 rounded-full object-cover ltr:mr-2 rtl:ml-2" alt="avatar" />
-                                                        </div>
-                                                    )}
-                                                    {!contact.path && contact.name && (
-                                                        <div className="grid place-content-center h-8 w-8 ltr:mr-2 rtl:ml-2 rounded-full bg-primary text-white text-sm font-semibold"></div>
-                                                    )}
-                                                    {!contact.path && !contact.name && (
-                                                        <div className="border border-gray-300 dark:border-gray-800 rounded-full p-2 ltr:mr-2 rtl:ml-2">
-                                                            <IconUser className="w-4.5 h-4.5" />
-                                                        </div>
-                                                    )}
-                                                    <div>{contact.name}</div>
-                                                </div>
-                                            </td>
-                                            <td>{contact.email}</td>
-                                            <td className="whitespace-nowrap">{contact.location}</td>
-                                            <td className="whitespace-nowrap">{contact.phone}</td>
-                                            <td>
-                                                <div className="flex gap-4 items-center justify-center">
-                                                    <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => editUser(contact)}>
-                                                        Edit
-                                                    </button>
-                                                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => deleteUser(contact)}>
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {filteredItems.map((contact: any) => (
+                                <tr key={contact._id}>
+                                    <td>{contact.firstName}</td>
+                                    <td>{contact.email}</td>
+                                    <td>{contact.phone}</td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={() => deleteUser(contact)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+
                             </tbody>
                         </table>
                     </div>
@@ -481,45 +285,7 @@ const Contacts = () => {
                                     <div className="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
                                         {params.id ? 'Edit Contact' : 'Add Contact'}
                                     </div>
-                                    <div className="p-5">
-                                        <form>
-                                            <div className="mb-5">
-                                                <label htmlFor="name">Name</label>
-                                                <input id="name" type="text" placeholder="Enter Name" className="form-input" value={params.name} onChange={(e) => changeValue(e)} />
-                                            </div>
-                                            <div className="mb-5">
-                                                <label htmlFor="email">Email</label>
-                                                <input id="email" type="email" placeholder="Enter Email" className="form-input" value={params.email} onChange={(e) => changeValue(e)} />
-                                            </div>
-                                            <div className="mb-5">
-                                                <label htmlFor="number">Phone Number</label>
-                                                <input id="phone" type="text" placeholder="Enter Phone Number" className="form-input" value={params.phone} onChange={(e) => changeValue(e)} />
-                                            </div>
-                                            <div className="mb-5">
-                                                <label htmlFor="occupation">Occupation</label>
-                                                <input id="role" type="text" placeholder="Enter Occupation" className="form-input" value={params.role} onChange={(e) => changeValue(e)} />
-                                            </div>
-                                            <div className="mb-5">
-                                                <label htmlFor="address">Address</label>
-                                                <textarea
-                                                    id="location"
-                                                    rows={3}
-                                                    placeholder="Enter Address"
-                                                    className="form-textarea resize-none min-h-[130px]"
-                                                    value={params.location}
-                                                    onChange={(e) => changeValue(e)}
-                                                ></textarea>
-                                            </div>
-                                            <div className="flex justify-end items-center mt-8">
-                                                <button type="button" className="btn btn-outline-danger" onClick={() => setAddContactModal(false)}>
-                                                    Cancel
-                                                </button>
-                                                <button type="button" className="btn btn-primary ltr:ml-4 rtl:mr-4" onClick={saveUser}>
-                                                    {params.id ? 'Update' : 'Add'}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
+                                    
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { IRootState } from './store';
 import { toggleRTL, toggleTheme, toggleLocale, toggleMenu, toggleLayout, toggleAnimation, toggleNavbar, toggleSemidark } from './store/themeConfigSlice';
 import store from './store';
+import { ToastContainer } from "react-toastify";
 
 function App({ children }: PropsWithChildren) {
     const themeConfig = useSelector((state: IRootState) => state.themeConfig);
@@ -26,6 +27,7 @@ function App({ children }: PropsWithChildren) {
             } main-section antialiased relative font-nunito text-sm font-normal`}
         >
             {children}
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 }
