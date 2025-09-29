@@ -8,6 +8,9 @@ import IconSave from '../../../components/Icon/IconSave';
 import IconEye from '../../../components/Icon/IconEye';
 import IconDownload from '../../../components/Icon/IconDownload';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
+import { useNavigate } from 'react-router-dom';
+
 
 // ✅ Interfaces
 interface BillingInfo {
@@ -44,6 +47,8 @@ interface InvoiceParams {
 }
 
 const Edit = () => {
+            const navigate = useNavigate();
+  
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
 
@@ -100,7 +105,7 @@ const Edit = () => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`)
+      .get(`https://cybitbackend.onrender.com/api/invoices/${id}`)
       .then((res) => {
         if (res.data.success && res.data.invoice) {
           const inv = res.data.invoice;
@@ -159,8 +164,132 @@ const Edit = () => {
     setItems(items.filter((item) => item.id !== itemId));
   };
 
+  const validateForm = (): boolean => {
+  if (!params.invoiceNo.trim()) {
+    const el = document.getElementById('number');
+    el?.focus();
+    return false;
+  }
+  if (!params.invoiceLabel.trim()) {
+    const el = document.getElementById('invoiceLabel');
+    el?.focus();
+    return false;
+  }
+  if (!params.invoiceDate.trim()) {
+    const el = document.getElementById('startDate');
+    el?.focus();
+    return false;
+  }
+  if (!params.dueDate.trim()) {
+    const el = document.getElementById('dueDate');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.name.trim()) {
+    const el = document.getElementById('reciever-name');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.email.trim()) {
+    const el = document.getElementById('reciever-email');
+    el?.focus();
+    return false;
+  }
+  const emailRegex = /\S+@\S+\.\S+/;
+  if (!emailRegex.test(params.to.email)) {
+    const el = document.getElementById('reciever-email');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.address.trim()) {
+    const el = document.getElementById('reciever-address');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.accountNumber.trim()) {
+    const el = document.getElementById('acno');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.bankName.trim()) {
+    const el = document.getElementById('bank-name');
+    el?.focus();
+    return false;
+  }
+  if (!paymentMethod) {
+    const el = document.getElementById('payment-method');
+    el?.focus();
+    return false;
+  }
+  if (!params.notes.trim()) {
+    const el = document.getElementById('notes');
+    el?.focus();
+    return false;
+  }
+
+  // Items validation
+  if (items.length === 0) {
+    const el = document.getElementById('add-item-button'); // add item button ko focus
+    el?.focus();
+    return false;
+  }
+  // Payment Details validation
+if (paymentMethod === 'bank') {
+  if (!params.bankInfo.accountNumber.trim()) {
+    const el = document.getElementById('acno');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.bankName.trim()) {
+    const el = document.getElementById('bank-name');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.swiftNumber.trim()) {
+    const el = document.getElementById('swift-no');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.ibanNumber.trim()) {
+    const el = document.getElementById('iban-no');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.country.trim()) {
+    const el = document.querySelector('select') as HTMLElement;
+    el?.focus();
+    return false;
+  }
+}
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const itemTitleEl = document.getElementById(`item-title-${item.id}`);
+    const itemQtyEl = document.getElementById(`item-qty-${item.id}`);
+    const itemPriceEl = document.getElementById(`item-price-${item.id}`);
+
+    if (!item.title.trim()) {
+      itemTitleEl?.focus();
+      return false;
+    }
+    if (item.quantity <= 0) {
+      itemQtyEl?.focus();
+      return false;
+    }
+    if (item.amount <= 0) {
+      itemPriceEl?.focus();
+      return false;
+    }
+  }
+
+  return true;
+};
+
+
   // ✅ Save invoice
   const handleSave = () => {
+      if (!validateForm()) return;
+
     if (!id) return;
 
     const payload = {
@@ -180,9 +309,13 @@ const Edit = () => {
     };
 
     axios
-      .put(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`, payload)
+      .put(`https://cybitbackend.onrender.com/api/invoices/${id}`, payload)
       .then((res) => {
-        if (res.data.success) alert('Invoice updated successfully!');
+        if (res.data.success)              setTimeout(() => {
+                   toast.success('Invoice updated successfully');
+                            navigate('/apps/invoice/list'); // yahan apna route de jahan redirect karna hai
+                  }, 1000);
+                  // alert('Invoice updated successfully!');
         else alert('Failed to update invoice!');
       })
       .catch((err) => {
@@ -217,6 +350,7 @@ const Edit = () => {
             </div>
           </div>
           <div className="lg:w-1/2 w-full lg:max-w-fit">
+          
             {['Invoice Number', 'Invoice Label', 'Invoice Date', 'Due Date'].map(
               (label) => {
                 const field = label.replace(/\s/g, '').toLowerCase();
@@ -233,6 +367,8 @@ const Edit = () => {
                   <div className="flex items-center mt-4" key={label}>
                     <label className="flex-1 ltr:mr-2 rtl:ml-2 mb-0">{label}</label>
                     <input
+                      id={field === 'invoicenumber' ? 'number' : field === 'invoicelabel' ? 'invoiceLabel' : field === 'invoicedate' ? 'startDate' : 'dueDate'}
+
                       type={type}
                       className="form-input lg:w-[250px] w-2/3"
                       value={value}
@@ -266,6 +402,8 @@ const Edit = () => {
                     {field.charAt(0).toUpperCase() + field.slice(1)}
                   </label>
                   <input
+                    id={`reciever-${field}`} // id: reciever-name, reciever-email, etc.
+
                     type={field === 'email' ? 'email' : 'text'}
                     className="form-input flex-1"
                     placeholder={`Enter ${field}`}
@@ -294,6 +432,8 @@ const Edit = () => {
               <div className="flex items-center" key={input.field}>
                 <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">{input.label}</label>
                 <input
+                  id={input.field === 'accountNumber' ? 'acno' : input.field === 'bankName' ? 'bank-name' : input.field === 'swiftNumber' ? 'swift-no' : 'iban-no'}
+
                   type="text"
                   className="form-input flex-1"
                   value={params.bankInfo[input.field as keyof BankInfo]}
@@ -359,6 +499,8 @@ const Edit = () => {
                   <tr key={item.id} className="align-top">
                     <td>
                       <input
+                        id={`item-title-${item.id}`}
+
                         type="text"
                         className="form-input min-w-[200px]"
                         placeholder="Enter Item Name"
@@ -375,7 +517,9 @@ const Edit = () => {
                       ></textarea>
                     </td>
                     <td>
-                      <input
+                      <input 
+                        id={`item-qty-${item.id}`}
+
                         type="number"
                         className="form-input w-32"
                         min={0}
@@ -387,6 +531,8 @@ const Edit = () => {
                     </td>
                     <td>
                       <input
+                        id={`item-price-${item.id}`}
+
                         type="number"
                         className="form-input w-32"
                         min={0}
@@ -412,6 +558,7 @@ const Edit = () => {
           </div>
           <div className="flex justify-between sm:flex-row flex-col mt-6 px-4">
             <button
+              id="add-item-button"
               type="button"
               className="btn btn-primary"
               style={{ fontSize: '0.875rem', height: '116%', minWidth: 'auto' }}
@@ -521,19 +668,19 @@ const Edit = () => {
           <button className="btn btn-success w-full gap-2" onClick={handleSave}>
             <IconSave /> Save
           </button>
-          <button className="btn btn-info w-full gap-2">
+          {/* <button className="btn btn-info w-full gap-2">
             <IconSend /> Send Invoice
-          </button>
+          </button> */}
           <Link
-            to={`/apps/estimation/preview/${id}`}
+            to={`/apps/invoice/preview/${id}`}
             className="btn btn-primary w-full gap-2"
           >
             <IconEye /> Preview
           </Link>
 
-          <button className="btn btn-secondary w-full gap-2">
+          {/* <button className="btn btn-secondary w-full gap-2">
             <IconDownload /> Download
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

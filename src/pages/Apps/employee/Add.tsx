@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setPageTitle } from '../../../store/themeConfigSlice';
@@ -9,9 +11,16 @@ import IconSend from '../../../components/Icon/IconSend';
 import IconSave from '../../../components/Icon/IconSave';
 import axios from 'axios';
 import Select from 'react-select';
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
  
 const Add = () => {
+      const navigate = useNavigate();
+        const handleRedirect = () => {
+    navigate('/apps/employee/list');
+  };
+
+
     const dispatch = useDispatch();
 
     const [items, setItems] = useState<any>([
@@ -62,92 +71,271 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
         if (type === 'price') item.amount = Number(value);
         setItems(list);
     };
+    const showError = (fieldId: string, message: string) => {
+    const inputEl = document.getElementById(fieldId) as HTMLInputElement;
+    const parent = inputEl?.closest(".form-group") as HTMLElement;
+    if (!inputEl || !parent) return;
 
+    const errorDiv = parent.querySelector(".error-message") as HTMLDivElement;
+    if (errorDiv) errorDiv.innerText = message;
+    parent.classList.add("invalid");
+    inputEl.focus();
+  };
+
+  const clearError = (fieldId: string) => {
+    const inputEl = document.getElementById(fieldId) as HTMLInputElement;
+    const parent = inputEl?.closest(".form-group") as HTMLElement;
+    if (!inputEl || !parent) return;
+
+    const errorDiv = parent.querySelector(".error-message") as HTMLDivElement;
+    if (errorDiv) errorDiv.innerText = "";
+    parent.classList.remove("invalid");
+  };
+
+ const validateForm = () => {
+    // Collect values from DOM for simplicity here, can be refactored with controlled inputs
+    const requiredFields = [
+      { id: 'number', name: 'Employee Number' },
+      { id: 'invoiceLabel', name: 'Department' },
+      { id: 'desingnation', name: 'Designation' },
+      { id: 'dateOfJoining', name: 'Date of Joining' },
+      { id: 'name', name: 'Name' },
+      { id: 'reciever-email', name: 'Email' },
+       { id: 'password-new', name: 'Password' },
+        { id: 'confirm-password', name: 'Confirm Password' },
+      { id: 'mobile_number', name: 'Mobile Number' },
+      { id: 'gender', name: 'Gender' },
+      { id: 'father-name', name: "Father's/Husband Name" },
+      { id: 'mother_name', name: "Mother's Name" },
+      { id: 'contact_number', name: 'Contact Number' },
+      { id: 'marital-status', name: 'Marital Status' },
+      {id:'current-address-line1',name:"ADD Line 1"},
+      {id:'current-city',name:"City / Town"},
+      {id:"current-district",name:"District / County"},
+      {id:"current-state",name:"State / Province / Region"},
+      {id:"current-postal",name:"Postal Code / ZIP Code"},
+      {id:"current-country",name:"Country"},
+      {id:"current-landmark",name:"Nearest Landmark"},
+      {id:"permanent-address-line1",name:"ADD Line 1"},
+      {id:"permanent-city",name:"City / Town"},
+      {id:"permanent-district",name:"District / County"},
+      {id:"permanent-state", name:"State / Province / Region"},
+      {id:"permanent-postal",name:"Postal Code / ZIP Code"},
+      {id:"permanent-country",name:"Country"},
+      {id:"permanent-landmark",name:"Nearest Landmark"},
+      {id:"aadhar-number",name:"Aadhar Number"},
+      {id:"pan-number",name:"Pan Number"},
+      {id:"pf-account",name:"PF A/C"},
+      {id:"bank-name",name:"Bank Name"},
+      {id:"acno",name:"Account Number"},
+      {id:"ifsc-code",name:"IFSC Code"},
+      {id:"basic",name:"Basic"},
+      {id:"hra",name:"H R A"},
+      {id:"sa",name:"S A"},
+      {id:"pt",name:"P T"},
+      {id:"pf-ec",name:"PF E C"},
+      {id:"tds",name:"TDS"},
+      {id:"previous-compnay",name:"Previous Compnay"},
+      {id:"previous-posstion",name:"Possition"},
+      {id:"previous-salary",name:"Salary"},
+      {id:"previous-dor",name:"DOR"},
+      {id:"notes",name:"Notes"},
+      {id:"currency",name:"Currency"},
+      {id:"tax",name:"Tax"},
+      {id:"deduction",name:"Deduction"},
+      {id:"Salarynew",name:"Salary"}
+      // Add all other required fields here
+    ];
+
+    for (const field of requiredFields) {
+      // @ts-ignore
+      const el = document.getElementById(field.id);
+      console.log('el=',el);
+      if (!el) {
+        alert(`Missing form element: ${field.name}`);
+        return false;
+      }
+      // value depends on element type
+      const value = (el as HTMLInputElement | HTMLSelectElement).value.trim();
+      if (!value) {
+           const el = document.getElementById(field.id);
+            if (!el) {
+            console.error('Element not found');
+            return false;
+            }
+
+            const parent = el.parentNode;
+            if (!parent) {
+            console.error('Parent node not found');
+            return false;
+            }
+
+            let errorDiv = document.getElementById(field.id + '-error-message');
+            if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = field.id + '-error-message';
+            errorDiv.style.color = 'red';
+            errorDiv.style.fontSize = '0.9em';
+            errorDiv.style.marginTop = '4px';
+            errorDiv.style.marginLeft = '0px';
+            errorDiv.style.display = 'block';
+            parent.appendChild(errorDiv);
+            }
+
+            errorDiv.innerHTML = ``;
+            el.focus();
+
+            return false;
+
+
+      }
+      if (field.name === 'Email') {
+        // simple email regex validation
+        const emailRegex = /\S+@\S+\.\S+/;
+        if (!emailRegex.test(value)) {
+          alert('Please enter a valid Email');
+          return false;
+        }
+      }
+      const password = (document.getElementById('password-new') as HTMLInputElement).value;
+        const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement).value;
+        if (password !== confirmPassword) {
+        alert("Password and Confirm Password do not match");
+        return false;
+        }
+
+
+    }
+    return true;
+  };
+  
     // --- FIXED saveInvoice INSIDE COMPONENT ---
     const saveInvoice = async () => {
-    const formData = new FormData();
+  if (!validateForm()) return;
 
-    // Employee Info
-    formData.append("employeeNumber", (document.getElementById('number') as HTMLInputElement).value);
-    formData.append("department", (document.getElementById('invoiceLabel') as HTMLInputElement).value);
-    formData.append("designation", (document.getElementById('desingnation') as HTMLInputElement).value);
-    formData.append("dateOfJoining", (document.getElementById('dateOfJoining') as HTMLInputElement).value);
+  // पहले formData से duplicate चेक करने के लिए जरूरी fields बनाएं
+  const employeeNumber = (document.getElementById('number') as HTMLInputElement).value.trim();
+  const email = (document.getElementById('reciever-email') as HTMLInputElement).value.trim();
+  const aadharNumber = (document.getElementById('aadhar-number') as HTMLInputElement).value.trim();
+  const panNumber = (document.getElementById('pan-number') as HTMLInputElement).value.trim();
+  const mobileNumber = (document.getElementById('mobile_number') as HTMLInputElement).value.trim();
+  const contactNumber = (document.getElementById('contact_number') as HTMLInputElement).value.trim();
+  const accountNumber = (document.getElementById('acno') as HTMLInputElement).value.trim();
 
-    // Personal Details
-    formData.append("name", (document.getElementById('name') as HTMLInputElement).value);
-    // formData.append("email", (document.getElementById('email') as HTMLInputElement).value);
-    formData.append("mobileNumber", (document.getElementById('mobile_number') as HTMLInputElement).value);
-    formData.append("gender", (document.getElementById('gender') as HTMLSelectElement).value);
-    formData.append("fatherName", (document.getElementById('father-name') as HTMLInputElement).value);
-    formData.append("motherName", (document.getElementById('mother_name') as HTMLInputElement).value);
-    formData.append("contactNumber", (document.getElementById('contact_number') as HTMLInputElement).value);
-    formData.append("maritalStatus", (document.getElementById('marital-status') as HTMLSelectElement).value);
+  // Duplicate check API call
+  try {
+    
+    const duplicateCheckResponse = await axios.post('https://cybitbackend.onrender.com/api/employees/check-duplicate', {
+      employeeNumber,
+      email,
+      aadharNumber,
+      panNumber,
+      mobileNumber,
+      contactNumber,
+      accountNumber,
+    });
 
-    // Current Address
-    formData.append("currentAddressLine1", (document.getElementById('current-address-line1') as HTMLInputElement).value);
-    formData.append("currentCity", (document.getElementById('current-city') as HTMLInputElement).value);
-    formData.append("currentDistrict", (document.getElementById('current-district') as HTMLInputElement).value);
-    formData.append("currentState", (document.getElementById('current-state') as HTMLInputElement).value);
-    formData.append("currentPostalCode", (document.getElementById('current-postal') as HTMLInputElement).value);
-    formData.append("currentCountry", (document.getElementById('current-country') as HTMLSelectElement).value);
-    formData.append("currentLandmark", (document.getElementById('current-landmark') as HTMLInputElement).value);
-
-    // Permanent Address
-    formData.append("permanentAddressLine1", (document.getElementById('permanent-address-line1') as HTMLInputElement).value);
-    formData.append("permanentCity", (document.getElementById('permanent-city') as HTMLInputElement).value);
-    formData.append("permanentDistrict", (document.getElementById('permanent-district') as HTMLInputElement).value);
-    formData.append("permanentState", (document.getElementById('permanent-state') as HTMLInputElement).value);
-    formData.append("permanentPostalCode", (document.getElementById('permanent-postal') as HTMLInputElement).value);
-    formData.append("permanentCountry", (document.getElementById('permanent-country') as HTMLSelectElement).value);
-    formData.append("permanentLandmark", (document.getElementById('permanent-landmark') as HTMLInputElement).value);
-
-    // Bank Details
-    formData.append("aadharNumber", (document.getElementById('aadhar-number') as HTMLInputElement).value);
-    formData.append("panNumber", (document.getElementById('pan-number') as HTMLInputElement).value);
-    formData.append("pfAccount", (document.getElementById('pf-account') as HTMLInputElement).value);
-    formData.append("bankName", (document.getElementById('bank-name') as HTMLInputElement).value);
-    formData.append("accountNumber", (document.getElementById('acno') as HTMLInputElement).value);
-    formData.append("ifscCode", (document.getElementById('ifsc-code') as HTMLInputElement).value);
-
-    // Earnings & Deductions
-    formData.append("basic", (document.getElementById('basic') as HTMLInputElement).value);
-    formData.append("hra", (document.getElementById('hra') as HTMLInputElement).value);
-    formData.append("sa", (document.getElementById('sa') as HTMLInputElement).value);
-    formData.append("pt", (document.getElementById('pt') as HTMLInputElement).value);
-    formData.append("pfEc", (document.getElementById('pf-ec') as HTMLInputElement).value);
-    formData.append("tds", (document.getElementById('tds') as HTMLInputElement).value);
-
-    // Notes
-    formData.append("notes", (document.getElementById('notes') as HTMLTextAreaElement).value);
-
-    // Currency & Tax
-    formData.append("currency", (document.getElementById('currency') as HTMLSelectElement).value);
-    formData.append("tax", (document.getElementById('tax') as HTMLInputElement).value);
-    formData.append("deduction", (document.getElementById('deduction') as HTMLInputElement).value);
-    formData.append("salary", (document.getElementById('Salary') as HTMLInputElement).value);
-
-    // Files
-    const aadharFile = (document.getElementById('aadhar-file') as HTMLInputElement)?.files?.[0];
-    if (aadharFile) formData.append("aadharFile", aadharFile);
-
-    const panFile = (document.getElementById('pan-file') as HTMLInputElement)?.files?.[0];
-    if (panFile) formData.append("panFile", panFile);
-
-    const logoFile = (document.getElementById('company-logo') as HTMLInputElement)?.files?.[0];
-    if (logoFile) formData.append("companyLogo", logoFile);
-
-    try {
-        const res = await axios.post('https://newadmin-u8tx.onrender.com/api/employees', formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-        if (res.data) {
-            alert('Employee saved! ');
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Error saving invoice.');
+    if (duplicateCheckResponse.data.exists) {
+      alert(`Duplicate found in fields: ${duplicateCheckResponse.data.duplicateFields.join(', ')}. Please correct before saving.`);
+      return; // Stop save if duplicates found
     }
+  } catch (error) {
+    console.error('Error checking duplicates', error);
+    alert('Failed to check duplicates. Please try again.');
+    return;
+  }
+
+  // If no duplicates, proceed to submit form data
+  const formData = new FormData();
+
+  formData.append('employeeNumber', employeeNumber);
+  formData.append('department', (document.getElementById('invoiceLabel') as HTMLInputElement).value);
+  formData.append('designation', (document.getElementById('desingnation') as HTMLInputElement).value);
+  formData.append('dateOfJoining', (document.getElementById('dateOfJoining') as HTMLInputElement).value);
+  formData.append('name', (document.getElementById('name') as HTMLInputElement).value);
+  formData.append('email', email);
+  formData.append('password', (document.getElementById('password-new') as HTMLInputElement).value);
+  formData.append('mobileNumber', mobileNumber);
+  formData.append('gender', (document.getElementById('gender') as HTMLSelectElement).value);
+  formData.append('fatherName', (document.getElementById('father-name') as HTMLInputElement).value);
+  formData.append('motherName', (document.getElementById('mother_name') as HTMLInputElement).value);
+  formData.append('contactNumber', contactNumber);
+  formData.append('maritalStatus', (document.getElementById('marital-status') as HTMLSelectElement).value);
+
+  formData.append('currentAddressLine1', (document.getElementById('current-address-line1') as HTMLSelectElement).value);
+  formData.append('currentCity', (document.getElementById('current-city') as HTMLSelectElement).value);
+  formData.append('currentDistrict', (document.getElementById('current-district') as HTMLSelectElement).value);
+  formData.append('currentState', (document.getElementById('current-state') as HTMLSelectElement).value);
+  formData.append('currentCountry', (document.getElementById('current-country') as HTMLSelectElement).value);
+  formData.append('currentLandmark', (document.getElementById('current-landmark') as HTMLSelectElement).value);
+
+  formData.append('permanentAddressLine1', (document.getElementById('permanent-address-line1') as HTMLSelectElement).value);
+  formData.append('permanentCity', (document.getElementById('permanent-city') as HTMLSelectElement).value);
+  formData.append('permanentDistrict', (document.getElementById('permanent-district') as HTMLSelectElement).value);
+  formData.append('permanentState', (document.getElementById('permanent-state') as HTMLSelectElement).value);
+  formData.append('permanentCountry', (document.getElementById('permanent-country') as HTMLSelectElement).value);
+  formData.append('permanentPostal', (document.getElementById('permanent-postal') as HTMLSelectElement).value);
+  formData.append('currentPostal', (document.getElementById('current-postal') as HTMLSelectElement).value);
+
+  formData.append('aadharNumber', (document.getElementById('aadhar-number') as HTMLSelectElement).value);
+  formData.append('panNumber', (document.getElementById('pan-number') as HTMLSelectElement).value);
+  formData.append('pfAccount', (document.getElementById('pf-account') as HTMLSelectElement).value);
+  
+  formData.append('basic', (document.getElementById('basic') as HTMLSelectElement).value);
+  formData.append('hra', (document.getElementById('hra') as HTMLSelectElement).value);
+  formData.append('sa', (document.getElementById('sa') as HTMLSelectElement).value);//pt
+  
+  formData.append('pt', (document.getElementById('pt') as HTMLSelectElement).value);//tds
+  formData.append('pfEc', (document.getElementById('pf-ec') as HTMLSelectElement).value);//notes
+  formData.append('tds', (document.getElementById('tds') as HTMLSelectElement).value);
+
+  formData.append('notes', (document.getElementById('notes') as HTMLSelectElement).value);
+
+  formData.append('accountNumber', (document.getElementById('acno') as HTMLSelectElement).value);
+  formData.append('bankName', (document.getElementById('bank-name') as HTMLSelectElement).value);
+  formData.append('ifscCode', (document.getElementById('ifsc-code') as HTMLSelectElement).value);
+
+  // Continue appending other fields similarly ...
+    formData.append('previousCompany', (document.getElementById('previous-compnay') as HTMLInputElement).value);
+    formData.append('previousPosition', (document.getElementById('previous-posstion') as HTMLInputElement).value);
+    formData.append('previousSalary', (document.getElementById('previous-salary') as HTMLInputElement).value);
+    formData.append('previousDOR', (document.getElementById('previous-dor') as HTMLInputElement).value);
+    formData.append('salary', (document.getElementById('Salarynew') as HTMLInputElement).value);
+
+    formData.append('deduction', (document.getElementById('deduction') as HTMLInputElement).value);
+    formData.append('tax', (document.getElementById('tax') as HTMLInputElement).value);
+    formData.append('currency', (document.getElementById('currency') as HTMLInputElement).value);
+
+
+
+  // Files
+  const aadharFile = (document.getElementById('aadhar-file') as HTMLInputElement)?.files?.[0];
+  if (aadharFile) formData.append('aadharFile', aadharFile);
+
+  const panFile = (document.getElementById('pan-file') as HTMLInputElement)?.files?.[0];
+  if (panFile) formData.append('panFile', panFile);
+
+  const logoFile = (document.getElementById('company-logo') as HTMLInputElement)?.files?.[0];
+  if (logoFile) formData.append('companyLogo', logoFile);
+
+  try {
+    const res = await axios.post('https://cybitbackend.onrender.com/api/employees', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    if (res.data) {
+    //   alert('Employee saved!');
+        setTimeout(() => {
+       toast.success('Employee addes successfully');
+                navigate('/apps/employee/list'); // yahan apna route de jahan redirect karna hai
+      }, 1000);
+      // Optionally reset form or navigate away
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error saving employee.');
+  }
 };
+
 
 const [logoPreview, setLogoPreview] = useState<string>('');
 
@@ -201,6 +389,8 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         <div className="flex items-center">
                             <label htmlFor="number" className="flex-1 ltr:mr-2 rtl:ml-2 mb-0">Employee Number</label>
                             <input id="number" type="text" className="form-input lg:w-[250px] w-2/3" placeholder="#8801" />
+                              <div className="error-message" id="name-error-message"></div>
+
                         </div>
                         {/* Invoice Label */}
                         <div className="flex items-center mt-4">
@@ -236,12 +426,35 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                                 <label htmlFor="reciever-email" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Email</label>
                                 <input id="reciever-email" type="email" className="form-input flex-1" placeholder="Enter Email" />
                             </div>
+                            <div className="mt-4 flex items-center">
+                            <label htmlFor="password" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Password</label>
+                            <input id="password-new" type="password" className="form-input flex-1" placeholder="Enter Password" />
+                            </div>
+                            <div className="mt-4 flex items-center">
+                                <label htmlFor="confirm-password" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0"> Confirm Password</label>
+                                <input
+                                    id="confirm-password"
+                                    type="password"
+                                    className="form-input flex-1"
+                                    placeholder="Confirm Password"
+                                />
+                                </div>
+
+
 
                             <div className="mt-4 flex items-center">
                                 <label htmlFor="mobile_number" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Mobile Number</label>
                                 <input id="mobile_number" type="number" className="form-input flex-1" placeholder="Enter Mobile Number" />
                             </div>
-                            <div className="mt-4 flex items-center">
+                            
+
+                            
+                        </div>
+
+                        {/* Payment Details */}
+                        <div className="lg:w-1/2 w-full">
+                        <br />
+                        <div className="mt-4 flex items-center">
                                 <label
                                     htmlFor="country"
                                     className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0"
@@ -256,17 +469,10 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                                     <option value="" disabled>
                                     Select Gender
                                     </option>
-                                    <option value="india">Male</option>
-                                    <option value="usa">FeMale</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">FeMale</option>
                                 </select>
                                 </div>
-
-                            
-                        </div>
-
-                        {/* Payment Details */}
-                        <div className="lg:w-1/2 w-full">
-                        <br />
                             <div className="text-lg"></div>
                              <div className="mt-4 flex items-center">
                                 <label htmlFor="father-name" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Father's/Husband Name</label>
@@ -295,19 +501,20 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                                     <option value="" disabled>
                                     Select Marital Status
                                     </option>
-                                    <option value="india">Marride</option>
-                                    <option value="usa">Singale</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Single">Single</option>
                                 </select>
                                 </div>
                             
                         </div>
                     </div>
                 </div>
+                <hr className="border-white-light dark:border-[#1b2e4b] my-6" />
                  <div className="mt-8 px-4">
                     <div className="flex justify-between lg:flex-row flex-col">
                         {/* Bill To */}
                         <div className="lg:w-1/2 w-full ltr:lg:mr-6 rtl:lg:ml-6 mb-6">
-                            <div className="text-lg">Cuurent Address Details</div>
+                            <div className="text-lg">Current Address Details</div>
                              <div className="mt-4 flex items-center">
                                 <label htmlFor="aadhar_number" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">ADD Line 1</label>
                                 <input id="current-address-line1" type="text" className="form-input flex-1" placeholder="Enter (House/Flat No., Street, Locality)" />
@@ -351,7 +558,7 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                             </div>
 
                              <div className="mt-4 flex items-center">
-                                <label htmlFor="pf" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Nearest Landmark </label>
+                                <label htmlFor="current-landmark" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Nearest Landmark </label>
                                 <input id="current-landmark" type="text" className="form-input flex-1" placeholder="Enter Nearest Landmark" />
                             </div>
                             
@@ -403,12 +610,13 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                             </div>
 
                              <div className="mt-4 flex items-center">
-                                <label htmlFor="pf" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Nearest Landmark </label>
+                                <label htmlFor="permanent-landmark" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Nearest Landmark </label>
                                 <input id="permanent-landmark" type="text" className="form-input flex-1" placeholder="Enter Nearest Landmark" />
                             </div>
                         </div>
                     </div>
                 </div>
+                <hr className="border-white-light dark:border-[#1b2e4b] my-6" />
                           
                 <div className="mt-8 px-4">
                     <div className="flex justify-between lg:flex-row flex-col">
@@ -449,8 +657,8 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         </div>
                     </div>
                 </div>
-
-                 <div className="mt-8 px-4">
+<hr className="border-white-light dark:border-[#1b2e4b] my-6" />
+                <div className="mt-8 px-4">
                     <div className="flex justify-between lg:flex-row flex-col">
                         {/* Bill To */}
                         <div className="lg:w-1/2 w-full ltr:lg:mr-6 rtl:lg:ml-6 mb-6">
@@ -488,8 +696,38 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                         </div>
                     </div>
                 </div>
-
-              
+<hr className="border-white-light dark:border-[#1b2e4b] my-6" />
+                <div className="mt-8 px-4">
+                    <div className="flex justify-between lg:flex-row flex-col">
+                        {/* Bill To */}
+                        <div className="lg:w-1/2 w-full ltr:lg:mr-6 rtl:lg:ml-6 mb-6">
+                            <div className="text-lg">Previous Compnay Details</div>
+                             <div className="mt-4 flex items-center">
+                                <label htmlFor="aadhar_number" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Previous Compnay</label>
+                                <input id="previous-compnay" type="text" className="form-input flex-1" placeholder="Enter Previous Compnay" />
+                            </div>
+                            <div className="mt-4 flex items-center">
+                                <label htmlFor="previous-posstion" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Possition</label>
+                                <input id="previous-posstion" type="text" className="form-input flex-1" placeholder="Enter Position" />
+                            </div>
+                        </div>
+                        <div className="lg:w-1/2 w-full ltr:lg:mr-6 rtl:lg:ml-6 mb-6">
+                        <br />
+                            <div className="text-lg"></div>
+                             
+                            <div className="mt-4 flex items-center">
+                                <label htmlFor="pf" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Salary</label>
+                                <input id="previous-salary" type="text" className="form-input flex-1" placeholder="Enter Salary" />
+                            </div>
+                             <div className="mt-4 flex items-center">
+                                <label htmlFor="pf" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">DOR</label>
+                                <input id="previous-dor" type="date" className="form-input flex-1" placeholder="Enter DOR" />
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+              <hr className="border-white-light dark:border-[#1b2e4b] my-6" />
                
 
                 {/* Notes */}
@@ -523,7 +761,7 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                     <div className="mt-4">
                         <label htmlFor="salary">Salary ({currencySymbols[selectedCurrency]}) </label>
-                        <input id="Salary" type="number" name="Salary" className="form-input" defaultValue={0} />
+                        <input id="Salarynew" type="number" name="Salary" className="form-input" defaultValue={0} />
                     </div>
 
                     {/* <div className="mt-4">
@@ -543,7 +781,7 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                             <IconSave className="ltr:mr-2 rtl:ml-2 shrink-0" /> Save
                         </button>
 
-                        <button type="button" className="btn btn-info w-full gap-2">
+                        {/* <button type="button" className="btn btn-info w-full gap-2">
                             <IconSend className="ltr:mr-2 rtl:ml-2 shrink-0" /> Send Invoice
                         </button>
 
@@ -553,7 +791,7 @@ const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
                         <button type="button" className="btn btn-secondary w-full gap-2">
                             <IconDownload className="ltr:mr-2 rtl:ml-2 shrink-0" /> Download
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>

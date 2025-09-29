@@ -6,6 +6,7 @@ import IconTrashLines from "../../../components/Icon/IconTrashLines";
 import IconPlus from "../../../components/Icon/IconPlus";
 import IconEdit from "../../../components/Icon/IconEdit";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 const List = () => {
   const dispatch = useDispatch();
@@ -24,7 +25,7 @@ const List = () => {
   // --- FETCH EXPENSES ---
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get("https://newadmin-u8tx.onrender.com/api/expenses");
+      const res = await axios.get("https://cybitbackend.onrender.com/api/expenses");
       setExpenses(res.data.data || []);
     } catch (err) {
       console.error("Error fetching expenses:", err);
@@ -36,9 +37,9 @@ const List = () => {
     if (!window.confirm("Are you sure want to delete this expense?")) return;
 
     try {
-      await axios.delete(`https://newadmin-u8tx.onrender.com/api/expenses/${id}`);
+      await axios.delete(`https://cybitbackend.onrender.com/api/expenses/${id}`);
       setExpenses(expenses.filter((e) => e._id !== id));
-      setSuccessMsg("Expense deleted successfully ✅");
+      toast.success("Expense deleted successfully ✅");
 
       setTimeout(() => setSuccessMsg(""), 3000); // 3 sec बाद msg हटेगा
     } catch (err) {
@@ -64,11 +65,12 @@ const List = () => {
   const getImageUrl = (img: string) => {
     if (!img) return "/assets/images/cybblackpink.png"; // fallback
     if (img.startsWith("http")) return img; // अगर full url है तो
-    return `http://localhost:5000/uploads/${img}`; // अगर सिर्फ filename है तो backend upload path से जोड़कर
+    return `https://cybitbackend.onrender.com/uploads/${img}`; // अगर सिर्फ filename है तो backend upload path से जोड़कर
   };
 
   return (
     <div className="panel p-4">
+      <Toaster position="top-right" reverseOrder={false} />
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">

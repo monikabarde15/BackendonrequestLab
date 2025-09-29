@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { setPageTitle } from "../../../store/themeConfigSlice";
 import IconSave from "../../../components/Icon/IconSave";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 const EditExpense = () => {
   const dispatch = useDispatch();
@@ -18,21 +19,28 @@ const EditExpense = () => {
     image: null as File | null,
   });
 
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const titleRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     dispatch(setPageTitle("Edit Expense"));
     if (id) fetchExpense(id);
   }, [dispatch, id]);
 
-  // --- FETCH EXPENSE BY ID ---
   const fetchExpense = async (expenseId: string) => {
     try {
-      const res = await axios.get(`https://newadmin-u8tx.onrender.com/api/expenses/${expenseId}`);
+      const res = await axios.get(
+        `https://cybitbackend.onrender.com/api/expenses/${expenseId}`
+      );
       const expense = res.data.data;
 
       setFormData({
         title: expense.title,
         description: expense.description,
-        price: expense.price,
+        price: String(expense.price),
         image: null,
       });
 
@@ -43,7 +51,6 @@ const EditExpense = () => {
     }
   };
 
-  // --- HANDLE INPUTS ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -52,12 +59,34 @@ const EditExpense = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  // --- UPDATE EXPENSE ---
+  const validateForm = () => {
+    let newErrors: { [key: string]: string } = {};
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
+    if (!formData.price.trim()) newErrors.price = "Price is required";
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      if (newErrors.title) titleRef.current?.focus();
+      else if (newErrors.description) descriptionRef.current?.focus();
+      else if (newErrors.price) priceRef.current?.focus();
+      return false;
+    }
+    return true;
+  };
+
   const updateExpense = async () => {
+    if (!validateForm()) return;
+
     try {
       const data = new FormData();
       data.append("title", formData.title);
@@ -65,13 +94,20 @@ const EditExpense = () => {
       data.append("price", formData.price);
       if (formData.image) data.append("image", formData.image);
 
-      const res = await axios.put(`https://newadmin-u8tx.onrender.com/api/expenses/${id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.put(
+        `https://cybitbackend.onrender.com/api/expenses/${id}`,
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       if (res.data.success) {
-        alert("Expense updated successfully!");
-        navigate("/apps/expenses/list");
+        // alert("Expense updated successfully!");
+                  setTimeout(() => {
+                           toast.success('Expense updated successfully ');
+                                    navigate('/apps/expenses/list'); // yahan apna route de jahan redirect karna hai
+                          }, 1000);
       }
     } catch (err) {
       console.error("Error updating expense:", err);
@@ -90,49 +126,78 @@ const EditExpense = () => {
         />
         <label className="cursor-pointer px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
           Upload Image
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
         </label>
       </div>
 
       {/* Title */}
       <div className="mb-4">
-        <label htmlFor="title" className="block font-medium mb-1">Title</label>
+        <label htmlFor="title" className="block font-medium mb-1">
+          Title
+        </label>
         <input
           id="title"
           name="title"
           type="text"
+          ref={titleRef}
           value={formData.title}
           onChange={handleChange}
-          className="form-input w-full"
+          className={`form-input w-full ${
+            errors.title ? "border-red-500" : ""
+          }`}
           placeholder="Enter title"
         />
+        {errors.title && (
+          <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+        )}
       </div>
 
       {/* Description */}
       <div className="mb-4">
-        <label htmlFor="description" className="block font-medium mb-1">Description</label>
+        <label htmlFor="description" className="block font-medium mb-1">
+          Description
+        </label>
         <textarea
           id="description"
           name="description"
+          ref={descriptionRef}
           value={formData.description}
           onChange={handleChange}
-          className="form-textarea w-full min-h-[100px]"
+          className={`form-textarea w-full min-h-[100px] ${
+            errors.description ? "border-red-500" : ""
+          }`}
           placeholder="Write description..."
         />
+        {errors.description && (
+          <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+        )}
       </div>
 
       {/* Price */}
       <div className="mb-6">
-        <label htmlFor="price" className="block font-medium mb-1">Price</label>
+        <label htmlFor="price" className="block font-medium mb-1">
+          Price
+        </label>
         <input
           id="price"
           name="price"
           type="number"
+          ref={priceRef}
           value={formData.price}
           onChange={handleChange}
-          className="form-input w-full"
+          className={`form-input w-full ${
+            errors.price ? "border-red-500" : ""
+          }`}
           placeholder="Enter price"
         />
+        {errors.price && (
+          <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+        )}
       </div>
 
       {/* Save Button */}

@@ -15,7 +15,7 @@ import IconTwitter from '../../components/Icon/IconTwitter';
 import IconX from '../../components/Icon/IconX';
 import axios from 'axios';
 
-const API_URL = "https://newadmin-u8tx.onrender.com/api/contact";
+const API_URL = "https://cybitbackend.onrender.com/api/contact";
 
 const Contacts = () => {
  const dispatch = useDispatch();

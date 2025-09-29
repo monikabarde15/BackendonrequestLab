@@ -16,10 +16,11 @@ import IconSearch  from '../../components/Icon/IconSearch';
 import IconX from '../../components/Icon/IconX';
 import IconHorizontalDots  from '../../components/Icon/IconHorizontalDots';
 // ...
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 import axios from 'axios';
 
-const API_URL = 'https://newadmin-u8tx.onrender.com/api';
+const API_URL = 'https://cybitbackend.onrender.com/api';
 
 export const fetchBlogs = () => axios.get(`${API_URL}/blogs`);
 export const addBlog = (data: any) => axios.post(`${API_URL}/blogs`, data);
@@ -178,34 +179,88 @@ const Blogs = () => {
     setViewTaskModal(true);
   };
 
-  const deleteTaskHandler = async (task: any) => {
-    try {
+  // const deleteTaskHandler = async (task: any) => {
+  //   try {
+  //     await deleteBlog(task._id);
+  //     loadTasks();
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+  const showToast = (icon: 'success' | 'error' | 'warning', title: string) => {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    icon,
+    title,
+  });
+};
+
+const [saving, setSaving] = useState(false);
+
+ const saveTask = async () => {
+ if (!params.title || !params.title.trim()) {
+    return showToast('warning', 'Title is required!');
+  }
+  if (!params.descriptionText || !params.descriptionText.trim()) {
+    return showToast('warning', 'Description is required!');
+  }
+
+  try {
+    setSaving(true); // ✅ Disable button while saving
+
+    const formData = new FormData();
+    formData.append('title', params.title);
+    formData.append('description', params.description);
+    if (params.image) formData.append('image', params.image);
+
+    if (params._id) {
+      await updateBlog(params._id, formData);
+      showToast('success', 'Blog updated successfully!');
+    } else {
+      await addBlog(formData);
+      showToast('success', 'Blog added successfully!');
+    }
+
+    setAddTaskModal(false);
+    loadTasks();
+  } catch (err) {
+    console.error(err);
+    showToast('error', 'Something went wrong. Try again!');
+  } finally {
+    setSaving(false); // ✅ Re-enable button
+  }
+};
+
+const deleteTaskHandler = async (task: any) => {
+  try {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This blog will be permanently deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
       await deleteBlog(task._id);
       loadTasks();
-    } catch (err) {
-      console.error(err);
+      showToast('success', 'Blog deleted successfully!');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    showToast('error', 'Failed to delete blog!');
+  }
+};
 
-  const saveTask = async () => {
-    try {
-      const formData = new FormData();
-      formData.append('title', params.title);
-      formData.append('description', params.description);
-      if (params.image) formData.append('image', params.image);
-
-      if (params._id) await updateBlog(params._id, formData);
-      else await addBlog(formData);
-
-      setAddTaskModal(false);
-      loadTasks();
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   return (
     <div className="flex gap-5 relative sm:h-[calc(100vh_-_150px)] h-full">
+      <Toaster position="top-right" reverseOrder={false} />
       {/* Sidebar */}
       <div
         className={`panel p-4 flex-none w-[240px] max-w-full absolute xl:relative z-10 space-y-4 xl:h-auto h-full xl:block ltr:xl:rounded-r-md ltr:rounded-r-none rtl:xl:rounded-l-md rtl:rounded-l-none hidden ${
@@ -382,9 +437,15 @@ const Blogs = () => {
                       <button className="btn btn-outline-danger" onClick={() => setAddTaskModal(false)}>
                         Cancel
                       </button>
-                      <button className="btn btn-primary" onClick={saveTask}>
-                        {params.id ? 'Update' : 'Add'}
-                      </button>
+                      <button
+  className={`btn btn-primary ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+  onClick={saveTask}
+  disabled={saving}
+>
+  {saving ? 'Saving...' : params.id ? 'Update' : 'Add'}
+</button>
+
+
                     </div>
                   </div>
                 </Dialog.Panel>

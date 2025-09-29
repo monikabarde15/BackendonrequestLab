@@ -19,7 +19,7 @@ const Preview = () => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/employees/${id}`)
+      .get(`https://cybitbackend.onrender.com/api/employees/${id}`)
       .then((res) => {
         if (res.data.success && res.data.data) {
           setEmployee(res.data.data);

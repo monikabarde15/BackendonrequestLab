@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 import { setPageTitle } from "../../../store/themeConfigSlice";
 import IconSave from "../../../components/Icon/IconSave";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 const Add = () => {
+            const navigate = useNavigate();
+  
   const dispatch = useDispatch();
   const [preview, setPreview] = useState("/assets/images/cybblackpink.png");
 
@@ -14,6 +18,9 @@ const Add = () => {
     price: "",
     image: null as File | null,
   });
+
+  // 🔹 For Validation Errors
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     dispatch(setPageTitle("Add Expense"));
@@ -31,9 +38,37 @@ const Add = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+    // ✅ Remove error while typing
+    setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!formData.title.trim()) newErrors.title = "Title is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
+    if (!formData.price.trim()) newErrors.price = "Price is required";
+    else if (Number(formData.price) <= 0)
+      newErrors.price = "Price must be greater than 0";
+
+    setErrors(newErrors);
+
+    // ✅ Focus first invalid input
+    if (Object.keys(newErrors).length > 0) {
+      const firstKey = Object.keys(newErrors)[0];
+      const el = document.getElementById(firstKey);
+      el?.focus();
+      return false;
+    }
+
+    return true;
   };
 
   const saveData = async () => {
+    if (!validateForm()) return;
+
     try {
       const data = new FormData();
       data.append("title", formData.title);
@@ -43,15 +78,21 @@ const Add = () => {
         data.append("image", formData.image);
       }
 
-      // 🔹 अब Expense API कॉल करेंगे
-      const res = await axios.post("https://newadmin-u8tx.onrender.com/api/expenses", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+        "https://cybitbackend.onrender.com/api/expenses",
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-    if (res.data.success) {
-    alert("Expense Saved! ID: " + res.data.data._id);
-    }
-
+      if (res.data.success) {
+          setTimeout(() => {
+                           toast.success('Expense saved!');
+                                    navigate('/apps/expenses/list'); // yahan apna route de jahan redirect karna hai
+                          }, 1000);
+        // alert("Expense Saved! ID: " + res.data.data._id);
+      }
     } catch (err) {
       console.error(err);
       alert("Error saving expense.");
@@ -89,9 +130,14 @@ const Add = () => {
           type="text"
           value={formData.title}
           onChange={handleChange}
-          className="form-input w-full"
+          className={`form-input w-full ${
+            errors.title ? "border-red-500" : ""
+          }`}
           placeholder="Enter title"
         />
+        {errors.title && (
+          <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+        )}
       </div>
 
       {/* Description */}
@@ -104,9 +150,14 @@ const Add = () => {
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="form-textarea w-full min-h-[100px]"
+          className={`form-textarea w-full min-h-[100px] ${
+            errors.description ? "border-red-500" : ""
+          }`}
           placeholder="Write description..."
         ></textarea>
+        {errors.description && (
+          <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+        )}
       </div>
 
       {/* Price */}
@@ -120,9 +171,14 @@ const Add = () => {
           type="number"
           value={formData.price}
           onChange={handleChange}
-          className="form-input w-full"
+          className={`form-input w-full ${
+            errors.price ? "border-red-500" : ""
+          }`}
           placeholder="Enter price"
         />
+        {errors.price && (
+          <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+        )}
       </div>
 
       {/* Save Button */}

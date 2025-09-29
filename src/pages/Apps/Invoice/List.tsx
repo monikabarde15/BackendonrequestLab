@@ -9,6 +9,7 @@ import IconPlus from '../../../components/Icon/IconPlus';
 import IconEdit from '../../../components/Icon/IconEdit';
 import IconEye from '../../../components/Icon/IconEye';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 const List = () => {
   const dispatch = useDispatch();
@@ -37,7 +38,7 @@ const List = () => {
 
   const fetchInvoices = async () => {
   try {
-    const res = await axios.get('https://newadmin-u8tx.onrender.com/api/invoices');
+    const res = await axios.get('https://cybitbackend.onrender.com/api/invoices');
     const data = res.data.invoices || [];
 
     // Map API response to table-friendly format
@@ -75,29 +76,28 @@ const deleteRow = async (id: string | null = null) => {
   if (!window.confirm("Are you sure want to delete selected row?")) return;
 
   try {
-    if (id) {
-      // DELETE single invoice
-      await axios.delete(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`);
-      const updated = items.filter((item) => item.id !== id);
-      setItems(updated);
-      setInitialRecords(updated);
-      setRecords(updated);
-      setSelectedRecords([]);
-      setSearch("");
-    } else if (selectedRecords.length) {
-      // DELETE multiple selected invoices
-      for (const row of selectedRecords) {
-        await axios.delete(`https://newadmin-u8tx.onrender.com/api/invoices/${row.id}`);
-      }
-      const ids = selectedRecords.map((d: any) => d.id);
-      const updated = items.filter((item) => !ids.includes(item.id));
-      setItems(updated);
-      setInitialRecords(updated);
-      setRecords(updated);
-      setSelectedRecords([]);
-      setSearch("");
-      setPage(1);
-    }
+   if (id) {
+  await axios.delete(`https://cybitbackend.onrender.com/api/invoices/${id}`);
+  const updated = items.filter((item) => item.id !== id);
+  setItems(updated);
+  setInitialRecords(updated);
+  setRecords(updated);
+  setSelectedRecords([]);
+  setSearch("");
+  toast.success('Invoice deleted successfully'); // ✅ call once here
+} else if (selectedRecords.length) {
+  const ids = selectedRecords.map((d: any) => d.id);
+  await Promise.all(ids.map(id => axios.delete(`https://cybitbackend.onrender.com/api/invoices/${id}`)));
+  const updated = items.filter(item => !ids.includes(item.id));
+  setItems(updated);
+  setInitialRecords(updated);
+  setRecords(updated);
+  setSelectedRecords([]);
+  setSearch("");
+  setPage(1);
+  toast.success('Selected invoices deleted successfully'); // ✅ only once
+}
+
   } catch (err) {
     console.error("Error deleting invoice(s):", err);
     alert("Failed to delete invoice(s).");
@@ -151,6 +151,8 @@ const currencySymbols: Record<string, string> = {
 
   return (
     <div className="panel px-0 border-white-light dark:border-[#1b2e4b]">
+          <Toaster position="top-right" reverseOrder={false} />
+
       <div className="invoice-table">
         <div className="mb-4.5 px-5 flex md:items-center md:flex-row flex-col gap-5">
           <div className="flex items-center gap-2">

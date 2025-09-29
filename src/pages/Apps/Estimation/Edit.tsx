@@ -8,8 +8,11 @@ import IconSave from '../../../components/Icon/IconSave';
 import IconEye from '../../../components/Icon/IconEye';
 import IconDownload from '../../../components/Icon/IconDownload';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
+import { useNavigate } from 'react-router-dom';
 
-// ---------------- Interfaces ----------------
+
+// ✅ Interfaces
 interface BillingInfo {
   name: string;
   email: string;
@@ -25,6 +28,14 @@ interface BankInfo {
   ibanNumber: string;
 }
 
+interface Item {
+  id: string;
+  title: string;
+  description: string;
+  quantity: number;
+  amount: number;
+}
+
 interface InvoiceParams {
   invoiceLabel: string;
   invoiceNo: string;
@@ -35,16 +46,9 @@ interface InvoiceParams {
   bankInfo: BankInfo;
 }
 
-interface InvoiceItem {
-  id: string;
-  title: string;
-  description: string;
-  quantity: number;
-  amount: number;
-}
-
-// ---------------- Component ----------------
 const Edit = () => {
+            const navigate = useNavigate();
+  
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
 
@@ -68,14 +72,18 @@ const Edit = () => {
     'TRY - Turkish Lira': '₺',
   };
 
-  // ---------------- State ----------------
   const [params, setParams] = useState<InvoiceParams>({
     invoiceLabel: '',
     invoiceNo: '',
     invoiceDate: '',
     dueDate: '',
     notes: '',
-    to: { name: '', email: '', address: '', phone: '' },
+    to: {
+      name: '',
+      email: '',
+      address: '',
+      phone: '',
+    },
     bankInfo: {
       accountNumber: '',
       bankName: '',
@@ -85,20 +93,20 @@ const Edit = () => {
     },
   });
 
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [tax, setTax] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
   const [shippingCharge, setShippingCharge] = useState<number>(0);
   const [selectedCurrency, setSelectedCurrency] = useState<string>('USD - US Dollar');
   const [paymentMethod, setPaymentMethod] = useState<string>('bank');
 
-  // ---------------- Fetch Invoice ----------------
+  // ✅ Fetch invoice data
   useEffect(() => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`)
-      .then(res => {
+      .get(`https://cybitbackend.onrender.com/api/estimation/${id}`)
+      .then((res) => {
         if (res.data.success && res.data.invoice) {
           const inv = res.data.invoice;
           setParams({
@@ -123,11 +131,8 @@ const Edit = () => {
           });
           setItems(
             inv.items?.map((item: any) => ({
+              ...item,
               id: crypto.randomUUID(),
-              title: item.title || '',
-              description: item.description || '',
-              quantity: item.quantity || 0,
-              amount: item.amount || 0,
             })) || []
           );
           setTax(inv.tax || 0);
@@ -136,14 +141,17 @@ const Edit = () => {
           setSelectedCurrency(inv.currency || 'USD - US Dollar');
         }
       })
-      .catch(err => console.error('Failed to fetch invoice', err));
+      .catch((err) => console.error('Failed to fetch invoice', err));
   }, [id]);
 
-  // ---------------- Item Handlers ----------------
-  const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
-    setItems(items.map(item => (item.id === id ? { ...item, [field]: value } : item)));
+  // ✅ Update item
+  const updateItem = (itemId: string, field: keyof Item, value: string | number) => {
+    setItems(
+      items.map((item) => (item.id === itemId ? { ...item, [field]: value } : item))
+    );
   };
 
+  // ✅ Add item
   const addItem = () => {
     setItems([
       ...items,
@@ -151,17 +159,137 @@ const Edit = () => {
     ]);
   };
 
-  const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+  // ✅ Remove item
+  const removeItem = (itemId: string) => {
+    setItems(items.filter((item) => item.id !== itemId));
   };
 
-  // ---------------- Totals ----------------
-  const subtotal = items.reduce((acc, item) => acc + item.amount * item.quantity, 0);
-  const total =
-    subtotal + (subtotal * tax) / 100 + shippingCharge - (subtotal * discount) / 100;
+  const validateForm = (): boolean => {
+  if (!params.invoiceNo.trim()) {
+    const el = document.getElementById('number');
+    el?.focus();
+    return false;
+  }
+  if (!params.invoiceLabel.trim()) {
+    const el = document.getElementById('invoiceLabel');
+    el?.focus();
+    return false;
+  }
+  if (!params.invoiceDate.trim()) {
+    const el = document.getElementById('startDate');
+    el?.focus();
+    return false;
+  }
+  if (!params.dueDate.trim()) {
+    const el = document.getElementById('dueDate');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.name.trim()) {
+    const el = document.getElementById('reciever-name');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.email.trim()) {
+    const el = document.getElementById('reciever-email');
+    el?.focus();
+    return false;
+  }
+  const emailRegex = /\S+@\S+\.\S+/;
+  if (!emailRegex.test(params.to.email)) {
+    const el = document.getElementById('reciever-email');
+    el?.focus();
+    return false;
+  }
+  if (!params.to.address.trim()) {
+    const el = document.getElementById('reciever-address');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.accountNumber.trim()) {
+    const el = document.getElementById('acno');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.bankName.trim()) {
+    const el = document.getElementById('bank-name');
+    el?.focus();
+    return false;
+  }
+  if (!paymentMethod) {
+    const el = document.getElementById('payment-method');
+    el?.focus();
+    return false;
+  }
+  if (!params.notes.trim()) {
+    const el = document.getElementById('notes');
+    el?.focus();
+    return false;
+  }
 
-  // ---------------- Save Handler ----------------
+  // Items validation
+  if (items.length === 0) {
+    const el = document.getElementById('add-item-button'); // add item button ko focus
+    el?.focus();
+    return false;
+  }
+  // Payment Details validation
+if (paymentMethod === 'bank') {
+  if (!params.bankInfo.accountNumber.trim()) {
+    const el = document.getElementById('acno');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.bankName.trim()) {
+    const el = document.getElementById('bank-name');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.swiftNumber.trim()) {
+    const el = document.getElementById('swift-no');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.ibanNumber.trim()) {
+    const el = document.getElementById('iban-no');
+    el?.focus();
+    return false;
+  }
+  if (!params.bankInfo.country.trim()) {
+    const el = document.querySelector('select') as HTMLElement;
+    el?.focus();
+    return false;
+  }
+}
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const itemTitleEl = document.getElementById(`item-title-${item.id}`);
+    const itemQtyEl = document.getElementById(`item-qty-${item.id}`);
+    const itemPriceEl = document.getElementById(`item-price-${item.id}`);
+
+    if (!item.title.trim()) {
+      itemTitleEl?.focus();
+      return false;
+    }
+    if (item.quantity <= 0) {
+      itemQtyEl?.focus();
+      return false;
+    }
+    if (item.amount <= 0) {
+      itemPriceEl?.focus();
+      return false;
+    }
+  }
+
+  return true;
+};
+
+
+  // ✅ Save invoice
   const handleSave = () => {
+      if (!validateForm()) return;
+
     if (!id) return;
 
     const payload = {
@@ -181,21 +309,35 @@ const Edit = () => {
     };
 
     axios
-      .put(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`, payload)
-      .then(res => {
-        if (res.data.success) alert('Estimation updated successfully!');
+      .put(`https://cybitbackend.onrender.com/api/estimation/${id}`, payload)
+      .then((res) => {
+        if (res.data.success)              setTimeout(() => {
+                   toast.success('Invoice updated successfully');
+                            navigate('/apps/estimation/list'); // yahan apna route de jahan redirect karna hai
+                  }, 1000);
+                  // alert('Invoice updated successfully!');
         else alert('Failed to update invoice!');
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Update failed', err);
         alert('Error updating invoice. Check console.');
       });
   };
 
-  // ---------------- UI ----------------
+  // ✅ Totals
+  const subtotal = items.reduce(
+    (acc: number, item: Item) => acc + item.amount * item.quantity,
+    0
+  );
+  const total =
+    subtotal +
+    (subtotal * tax) / 100 +
+    shippingCharge -
+    (subtotal * discount) / 100;
+
   return (
     <div className="flex xl:flex-row flex-col gap-2.5">
-      {/* Main Panel */}
+      {/* Main panel */}
       <div className="panel px-0 flex-1 py-6 ltr:xl:mr-6 rtl:xl:ml-6">
         {/* Invoice Header */}
         <div className="flex justify-between flex-wrap px-4">
@@ -208,37 +350,42 @@ const Edit = () => {
             </div>
           </div>
           <div className="lg:w-1/2 w-full lg:max-w-fit">
-            {['Invoice Number', 'Invoice Label', 'Invoice Date', 'Due Date'].map(label => {
-              const field = label.replace(/\s/g, '').toLowerCase();
-              const type = label.includes('Date') ? 'date' : 'text';
-              const value =
-                field === 'invoicenumber'
-                  ? params.invoiceNo
-                  : field === 'invoicelabel'
-                  ? params.invoiceLabel
-                  : field === 'invoicedate'
-                  ? params.invoiceDate
-                  : params.dueDate;
-              return (
-                <div className="flex items-center mt-4" key={label}>
-                  <label className="flex-1 ltr:mr-2 rtl:ml-2 mb-0">{label}</label>
-                  <input
-                    type={type}
-                    className="form-input lg:w-[250px] w-2/3"
-                    value={value}
-                    onChange={e => {
-                      if (field === 'invoicenumber')
-                        setParams({ ...params, invoiceNo: e.target.value });
-                      else if (field === 'invoicelabel')
-                        setParams({ ...params, invoiceLabel: e.target.value });
-                      else if (field === 'invoicedate')
-                        setParams({ ...params, invoiceDate: e.target.value });
-                      else setParams({ ...params, dueDate: e.target.value });
-                    }}
-                  />
-                </div>
-              );
-            })}
+          
+            {['Invoice Number', 'Invoice Label', 'Invoice Date', 'Due Date'].map(
+              (label) => {
+                const field = label.replace(/\s/g, '').toLowerCase();
+                const type = label.includes('Date') ? 'date' : 'text';
+                const value =
+                  field === 'invoicenumber'
+                    ? params.invoiceNo
+                    : field === 'invoicelabel'
+                    ? params.invoiceLabel
+                    : field === 'invoicedate'
+                    ? params.invoiceDate
+                    : params.dueDate;
+                return (
+                  <div className="flex items-center mt-4" key={label}>
+                    <label className="flex-1 ltr:mr-2 rtl:ml-2 mb-0">{label}</label>
+                    <input
+                      id={field === 'invoicenumber' ? 'number' : field === 'invoicelabel' ? 'invoiceLabel' : field === 'invoicedate' ? 'startDate' : 'dueDate'}
+
+                      type={type}
+                      className="form-input lg:w-[250px] w-2/3"
+                      value={value}
+                      onChange={(e) => {
+                        if (field === 'invoicenumber')
+                          setParams({ ...params, invoiceNo: e.target.value });
+                        else if (field === 'invoicelabel')
+                          setParams({ ...params, invoiceLabel: e.target.value });
+                        else if (field === 'invoicedate')
+                          setParams({ ...params, invoiceDate: e.target.value });
+                        else setParams({ ...params, dueDate: e.target.value });
+                      }}
+                    />
+                  </div>
+                );
+              }
+            )}
           </div>
         </div>
 
@@ -248,22 +395,29 @@ const Edit = () => {
           {/* Bill To */}
           <div className="lg:w-1/2 w-full space-y-4">
             <div className="text-lg">Bill To :-</div>
-            {(['name', 'email', 'address', 'phone'] as (keyof BillingInfo)[]).map(field => (
-              <div className="flex items-center" key={field}>
-                <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">
-                  {field.charAt(0).toUpperCase() + field.slice(1)}
-                </label>
-                <input
-                  type={field === 'email' ? 'email' : 'text'}
-                  className="form-input flex-1"
-                  placeholder={`Enter ${field}`}
-                  value={params.to[field]}
-                  onChange={e =>
-                    setParams({ ...params, to: { ...params.to, [field]: e.target.value } })
-                  }
-                />
-              </div>
-            ))}
+            {(['name', 'email', 'address', 'phone'] as (keyof BillingInfo)[]).map(
+              (field) => (
+                <div className="flex items-center" key={field}>
+                  <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    id={`reciever-${field}`} // id: reciever-name, reciever-email, etc.
+
+                    type={field === 'email' ? 'email' : 'text'}
+                    className="form-input flex-1"
+                    placeholder={`Enter ${field}`}
+                    value={params.to[field]}
+                    onChange={(e) =>
+                      setParams({
+                        ...params,
+                        to: { ...params.to, [field]: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+              )
+            )}
           </div>
 
           {/* Payment Details */}
@@ -274,17 +428,22 @@ const Edit = () => {
               { label: 'Bank Name', field: 'bankName' },
               { label: 'SWIFT Number', field: 'swiftNumber' },
               { label: 'IBAN Number', field: 'ibanNumber' },
-            ].map(input => (
+            ].map((input) => (
               <div className="flex items-center" key={input.field}>
                 <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">{input.label}</label>
                 <input
+                  id={input.field === 'accountNumber' ? 'acno' : input.field === 'bankName' ? 'bank-name' : input.field === 'swiftNumber' ? 'swift-no' : 'iban-no'}
+
                   type="text"
                   className="form-input flex-1"
                   value={params.bankInfo[input.field as keyof BankInfo]}
-                  onChange={e =>
+                  onChange={(e) =>
                     setParams({
                       ...params,
-                      bankInfo: { ...params.bankInfo, [input.field]: e.target.value },
+                      bankInfo: {
+                        ...params.bankInfo,
+                        [input.field]: e.target.value,
+                      },
                     })
                   }
                 />
@@ -293,15 +452,19 @@ const Edit = () => {
             <div className="flex items-center">
               <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Country</label>
               <select
+              id="country"
                 className="form-select flex-1"
                 value={params.bankInfo.country}
-                onChange={e =>
-                  setParams({ ...params, bankInfo: { ...params.bankInfo, country: e.target.value } })
+                onChange={(e) =>
+                  setParams({
+                    ...params,
+                    bankInfo: { ...params.bankInfo, country: e.target.value },
+                  })
                 }
               >
                 <option value="">Choose Country</option>
                 {['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India'].map(
-                  c => (
+                  (c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
@@ -333,39 +496,51 @@ const Edit = () => {
                     </td>
                   </tr>
                 )}
-                {items.map(item => (
+                {items.map((item) => (
                   <tr key={item.id} className="align-top">
                     <td>
                       <input
+                        id={`item-title-${item.id}`}
+
                         type="text"
                         className="form-input min-w-[200px]"
                         placeholder="Enter Item Name"
                         value={item.title}
-                        onChange={e => updateItem(item.id, 'title', e.target.value)}
+                        onChange={(e) => updateItem(item.id, 'title', e.target.value)}
                       />
                       <textarea
                         className="form-textarea mt-4"
                         placeholder="Enter Description"
                         value={item.description}
-                        onChange={e => updateItem(item.id, 'description', e.target.value)}
+                        onChange={(e) =>
+                          updateItem(item.id, 'description', e.target.value)
+                        }
                       ></textarea>
                     </td>
                     <td>
-                      <input
+                      <input 
+                        id={`item-qty-${item.id}`}
+
                         type="number"
                         className="form-input w-32"
                         min={0}
                         value={item.quantity}
-                        onChange={e => updateItem(item.id, 'quantity', Number(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(item.id, 'quantity', Number(e.target.value))
+                        }
                       />
                     </td>
                     <td>
                       <input
+                        id={`item-price-${item.id}`}
+
                         type="number"
                         className="form-input w-32"
                         min={0}
                         value={item.amount}
-                        onChange={e => updateItem(item.id, 'amount', Number(e.target.value))}
+                        onChange={(e) =>
+                          updateItem(item.id, 'amount', Number(e.target.value))
+                        }
                       />
                     </td>
                     <td>
@@ -384,6 +559,7 @@ const Edit = () => {
           </div>
           <div className="flex justify-between sm:flex-row flex-col mt-6 px-4">
             <button
+              id="add-item-button"
               type="button"
               className="btn btn-primary"
               style={{ fontSize: '0.875rem', height: '116%', minWidth: 'auto' }}
@@ -397,16 +573,19 @@ const Edit = () => {
                 Subtotal <span>{currencySymbols[selectedCurrency]}{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                Tax({tax}%) <span>{currencySymbols[selectedCurrency]}{((subtotal * tax) / 100).toFixed(2)}</span>
+                Tax({tax}%) <span>{currencySymbols[selectedCurrency]}{(subtotal * tax / 100).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                Shipping Rate({currencySymbols[selectedCurrency]}) <span>{currencySymbols[selectedCurrency]}{shippingCharge.toFixed(2)}</span>
+                Shipping Rate({currencySymbols[selectedCurrency]}) 
+                <span>{currencySymbols[selectedCurrency]}{shippingCharge.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                Discount({discount}%) <span>{currencySymbols[selectedCurrency]}{((subtotal * discount) / 100).toFixed(2)}</span>
+                Discount({discount}%) 
+                <span>{currencySymbols[selectedCurrency]}{(subtotal * discount / 100).toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-semibold">
-                Total <span>{currencySymbols[selectedCurrency]}{total.toFixed(2)}</span>
+                Total 
+                <span>{currencySymbols[selectedCurrency]}{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -419,7 +598,7 @@ const Edit = () => {
             className="form-textarea min-h-[130px]"
             placeholder="Notes..."
             value={params.notes}
-            onChange={e => setParams({ ...params, notes: e.target.value })}
+            onChange={(e) => setParams({ ...params, notes: e.target.value })}
           ></textarea>
         </div>
       </div>
@@ -431,9 +610,9 @@ const Edit = () => {
           <select
             className="form-select"
             value={selectedCurrency}
-            onChange={e => setSelectedCurrency(e.target.value)}
+            onChange={(e) => setSelectedCurrency(e.target.value)}
           >
-            {currencyList.map(c => (
+            {currencyList.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -447,7 +626,7 @@ const Edit = () => {
                 type="number"
                 className="form-input"
                 value={tax}
-                onChange={e => setTax(Number(e.target.value))}
+                onChange={(e) => setTax(Number(e.target.value))}
               />
             </div>
             <div>
@@ -456,7 +635,7 @@ const Edit = () => {
                 type="number"
                 className="form-input"
                 value={discount}
-                onChange={e => setDiscount(Number(e.target.value))}
+                onChange={(e) => setDiscount(Number(e.target.value))}
               />
             </div>
           </div>
@@ -467,7 +646,7 @@ const Edit = () => {
               type="number"
               className="form-input"
               value={shippingCharge}
-              onChange={e => setShippingCharge(Number(e.target.value))}
+              onChange={(e) => setShippingCharge(Number(e.target.value))}
             />
           </div>
 
@@ -476,7 +655,7 @@ const Edit = () => {
             <select
               className="form-select"
               value={paymentMethod}
-              onChange={e => setPaymentMethod(e.target.value)}
+              onChange={(e) => setPaymentMethod(e.target.value)}
             >
               <option value="">Select Payment</option>
               <option value="bank">Bank Account</option>
@@ -490,15 +669,19 @@ const Edit = () => {
           <button className="btn btn-success w-full gap-2" onClick={handleSave}>
             <IconSave /> Save
           </button>
-          <button className="btn btn-info w-full gap-2">
+          {/* <button className="btn btn-info w-full gap-2">
             <IconSend /> Send Invoice
-          </button>
-          <Link to={`/apps/estimation/preview/${id}`} className="btn btn-primary w-full gap-2">
+          </button> */}
+          {/* <Link
+            to={`/apps/invoice/preview/${id}`}
+            className="btn btn-primary w-full gap-2"
+          >
             <IconEye /> Preview
-          </Link>
-          <button className="btn btn-secondary w-full gap-2">
+          </Link> */}
+
+          {/* <button className="btn btn-secondary w-full gap-2">
             <IconDownload /> Download
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

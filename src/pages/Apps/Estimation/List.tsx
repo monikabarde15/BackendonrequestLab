@@ -9,6 +9,7 @@ import IconPlus from '../../../components/Icon/IconPlus';
 import IconEdit from '../../../components/Icon/IconEdit';
 import IconEye from '../../../components/Icon/IconEye';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 const List = () => {
   const dispatch = useDispatch();
@@ -47,7 +48,7 @@ const List = () => {
 
   const fetchInvoices = async () => {
   try {
-    const res = await axios.get('https://newadmin-u8tx.onrender.com/api/estimation');
+    const res = await axios.get('https://cybitbackend.onrender.com/api/estimation');
     const data = res.data.invoices || [];
 
     // Map API response to table-friendly format
@@ -87,17 +88,18 @@ const deleteRow = async (id: string | null = null) => {
   try {
     if (id) {
       // DELETE single invoice
-      await axios.delete(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`);
+      await axios.delete(`https://cybitbackend.onrender.com/api/estimation/${id}`);
       const updated = items.filter((item) => item.id !== id);
       setItems(updated);
       setInitialRecords(updated);
       setRecords(updated);
       setSelectedRecords([]);
       setSearch("");
+       toast.success('Estimation deleted successfully!');
     } else if (selectedRecords.length) {
       // DELETE multiple selected invoices
       for (const row of selectedRecords) {
-        await axios.delete(`https://newadmin-u8tx.onrender.com/api/estimation/${row.id}`);
+        await axios.delete(`https://cybitbackend.onrender.com/api/estimation/${row.id}`);
       }
       const ids = selectedRecords.map((d: any) => d.id);
       const updated = items.filter((item) => !ids.includes(item.id));
@@ -106,6 +108,7 @@ const deleteRow = async (id: string | null = null) => {
       setRecords(updated);
       setSelectedRecords([]);
       setSearch("");
+       toast.success('Estimation deleted successfully!');
       setPage(1);
     }
   } catch (err) {
@@ -151,6 +154,7 @@ const deleteRow = async (id: string | null = null) => {
 
   return (
     <div className="panel px-0 border-white-light dark:border-[#1b2e4b]">
+       <Toaster position="top-right" reverseOrder={false} />
       <div className="invoice-table">
         <div className="mb-4.5 px-5 flex md:items-center md:flex-row flex-col gap-5">
           <div className="flex items-center gap-2">

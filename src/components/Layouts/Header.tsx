@@ -140,9 +140,15 @@ const Header = () => {
     const [flag, setFlag] = useState(themeConfig.locale);
 
     const { t } = useTranslation();
-
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const role = user?.user?.role;
+console.log(user);
 
     const navigate = useNavigate();
+   if (!user || Object.keys(user).length === 0) {
+  console.log("log");
+  navigate('/');
+}
 
         const logout = () => {
             // Clear user state
@@ -150,7 +156,11 @@ const Header = () => {
             // Clear tokens/cookies if any
             localStorage.removeItem('token'); // example
             // Redirect to login page
-            navigate('/auth/boxed-signin');
+            if(role=="employee"){
+                navigate('/auth/cover-login');
+            }else{
+                navigate('/');
+            }
         };
 
 

@@ -19,7 +19,7 @@ const Preview = () => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/invoices/${id}`)
+      .get(`https://cybitbackend.onrender.com/api/invoices/${id}`)
       .then((res) => {
         if (res.data.success && res.data.invoice) {
           setInvoice(res.data.invoice);
@@ -71,15 +71,15 @@ const currency = getCurrencySymbol(invoice.currency);
   return (
     <div>
       <div className="flex items-center lg:justify-end justify-center flex-wrap gap-4 mb-6">
-        <button type="button" className="btn btn-info gap-2">
+        {/* <button type="button" className="btn btn-info gap-2">
           <IconSend /> Send Invoice
-        </button>
+        </button> */}
         <button type="button" className="btn btn-primary gap-2" onClick={exportTable}>
           <IconPrinter /> Print
         </button>
-        <button type="button" className="btn btn-success gap-2">
+        {/* <button type="button" className="btn btn-success gap-2">
           <IconDownload /> Download
-        </button>
+        </button> */}
         <Link to={`/apps/invoice/edit/${invoice._id}`} className="btn btn-warning gap-2">
           <IconEdit /> Edit
         </Link>

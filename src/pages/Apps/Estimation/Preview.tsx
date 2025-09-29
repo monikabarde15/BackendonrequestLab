@@ -19,7 +19,7 @@ const Preview = () => {
     if (!id) return;
 
     axios
-      .get(`https://newadmin-u8tx.onrender.com/api/estimation/${id}`)
+      .get(`https://cybitbackend.onrender.com/api/estimation/${id}`)
       .then((res) => {
         if (res.data.success && res.data.invoice) {
           setInvoice(res.data.invoice);

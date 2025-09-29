@@ -42,15 +42,16 @@ const LoginBoxed = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://newadmin-u8tx.onrender.com/api/auth/login', {
+      const response = await axios.post('https://cybitbackend.onrender.com/api/auth/login', {
         email,
         password,
       });
 
       const { token } = response.data; // assuming API returns token
       localStorage.setItem('authToken', token);
+      localStorage.setItem("user", JSON.stringify(response.data));
 
-      navigate('/analytics'); // redirect after login
+      navigate('/index'); // redirect after login
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Login failed');
@@ -183,9 +184,12 @@ const LoginBoxed = () => {
               </div>
 
               <div className="text-center dark:text-white">
-                Don't have an account?&nbsp;
-                <Link to="/auth/boxed-signup" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
+                If you have an  employee account?&nbsp;
+                {/* <Link to="/auth/boxed-signup" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
                   SIGN UP
+                </Link> */}
+                 <Link to="/auth/cover-login" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
+                 Employee SIGN IN
                 </Link>
               </div>
             </div>

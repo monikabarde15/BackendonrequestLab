@@ -36,7 +36,7 @@ const List = () => {
   // --- FETCH EMPLOYEES ---
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get('https://newadmin-u8tx.onrender.com/api/employees');
+      const res = await axios.get('https://cybitbackend.onrender.com/api/employees');
       const data = res.data.data || [];
 
       const mapped = data.map((emp: any) => ({
@@ -69,7 +69,7 @@ const List = () => {
 
     try {
       if (id) {
-        await axios.delete(`https://newadmin-u8tx.onrender.com/api/employees/${id}`);
+        await axios.delete(`https://cybitbackend.onrender.com/api/employees/${id}`);
         const updated = items.filter(item => item.id !== id);
         setItems(updated);
         setInitialRecords(updated);
@@ -79,7 +79,7 @@ const List = () => {
         toast.success('Employee deleted successfully');
       } else if (selectedRecords.length) {
         for (const row of selectedRecords) {
-          await axios.delete(`https://newadmin-u8tx.onrender.com/api/employees/${row.id}`);
+          await axios.delete(`https://cybitbackend.onrender.com/api/employees/${row.id}`);
         }
         const ids = selectedRecords.map((d: any) => d.id);
         const updated = items.filter(item => !ids.includes(item.id));

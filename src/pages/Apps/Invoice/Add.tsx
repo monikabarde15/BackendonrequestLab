@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setPageTitle } from '../../../store/themeConfigSlice';
@@ -8,8 +9,14 @@ import IconEye from '../../../components/Icon/IconEye';
 import IconSend from '../../../components/Icon/IconSend';
 import IconSave from '../../../components/Icon/IconSave';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast'; // ✅ Import toast
 
 const Add = () => {
+          const navigate = useNavigate();
+            const handleRedirect = () => {
+        navigate('/apps/invoice/list');
+      };
+    
     const dispatch = useDispatch();
 
     const [items, setItems] = useState<any>([
@@ -48,6 +55,10 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
     const removeItem = (item: any) => {
         setItems(items.filter((i: any) => i.id !== item.id));
     };
+const changeItemField = (id: number, field: 'title' | 'description', value: string) => {
+  const updatedItems = items.map(i => i.id === id ? { ...i, [field]: value } : i);
+  setItems(updatedItems);
+};
 
     const changeQuantityPrice = (type: string, value: string, id: number) => {
         const list = [...items];
@@ -58,8 +69,94 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
         setItems(list);
     };
 
+
+    const validateForm = () => {
+    // Collect values from DOM for simplicity here, can be refactored with controlled inputs
+   const requiredFields = [
+    { id: 'number', name: 'Invoice Number' },
+    { id: 'invoiceLabel', name: 'Invoice Label' },
+    { id: 'startDate', name: 'Invoice Date' },
+    { id: 'dueDate', name: 'Due Date' },
+    { id: 'reciever-name', name: 'Name' },
+    { id: 'reciever-email', name: 'Email' },
+    { id: 'reciever-address', name: 'Address' },
+    { id: 'acno', name: 'Account Number' },
+    { id: 'bank-name', name: 'Bank Name' },
+    { id: 'swiftNumber', name: 'SWIFT Number' },
+    { id: 'ibanNumber', name: 'IBAN Number' },
+    { id: 'country', name: 'Country' },
+    { id: 'tax', name: 'Tax' },
+    { id: 'discount', name: 'Discount' },
+    { id: 'shipping-charge', name: 'Shipping Charge' },
+    { id: 'currency', name: 'Currency' },
+    {id:"payment-method",name:"Accept Payment Via"},
+    { id: 'notes', name: 'Notes' },
+  ];
+
+    for (const field of requiredFields) {
+      // @ts-ignore
+      const el = document.getElementById(field.id);
+      console.log('el=',el);
+      if (!el) {
+        alert(`Missing form element: ${field.name}`);
+        return false;
+      }
+      // value depends on element type
+      const value = (el as HTMLInputElement | HTMLSelectElement).value.trim();
+      if (!value) {
+           const el = document.getElementById(field.id);
+            if (!el) {
+            console.error('Element not found');
+            return false;
+            }
+
+            const parent = el.parentNode;
+            if (!parent) {
+            console.error('Parent node not found');
+            return false;
+            }
+
+            let errorDiv = document.getElementById(field.id + '-error-message');
+            if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = field.id + '-error-message';
+            errorDiv.style.color = 'red';
+            errorDiv.style.fontSize = '0.9em';
+            errorDiv.style.marginTop = '4px';
+            errorDiv.style.marginLeft = '0px';
+            errorDiv.style.display = 'block';
+            parent.appendChild(errorDiv);
+            }
+
+            errorDiv.innerHTML = ``;
+            el.focus();
+
+            return false;
+
+
+      }
+      if (field.name === 'Email') {
+        // simple email regex validation
+        const emailRegex = /\S+@\S+\.\S+/;
+        if (!emailRegex.test(value)) {
+          alert('Please enter a valid Email');
+          return false;
+        }
+      }
+    
+
+    }
+    return true;
+  };
+  
+const [saving, setSaving] = useState(false);
+
     // --- FIXED saveInvoice INSIDE COMPONENT ---
     const saveInvoice = async () => {
+          if (!validateForm()) return;
+            setSaving(true);
+
+
     const data = {
         invoiceNumber: (document.getElementById('number') as HTMLInputElement).value,
         invoiceLabel: (document.getElementById('invoiceLabel') as HTMLInputElement).value,
@@ -74,9 +171,9 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
         paymentDetails: {
             accountNumber: (document.getElementById('acno') as HTMLInputElement).value,
             bankName: (document.getElementById('bank-name') as HTMLInputElement).value,
-            swiftNumber: "", // optional
-            ibanNumber: "", // optional
-            country: "", // optional
+            swiftNumber: (document.getElementById('swiftNumber') as HTMLInputElement).value, // optional
+            ibanNumber: (document.getElementById('ibanNumber') as HTMLInputElement).value, // optional
+            country: (document.getElementById('country') as HTMLInputElement).value,// optional
         },
         items: items.map((i: any) => ({
             title: i.title,
@@ -92,9 +189,13 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
     };
 
     try {
-        const res = await axios.post('https://newadmin-u8tx.onrender.com/api/invoices', data);
+        const res = await axios.post('https://cybitbackend.onrender.com/api/invoices', data);
         if (res.data.success) {
-            alert('Invoice saved! ID: ' + res.data.invoice._id);
+          //  alert('Invoice saved! ID: ' + res.data.invoice._id);
+             setTimeout(() => {
+                   toast.success('Invoice saved! ID: ' + res.data.invoice._id);
+                            navigate('/apps/invoice/list'); // yahan apna route de jahan redirect karna hai
+                  }, 1000);
         }
     } catch (err) {
         console.error(err);
@@ -175,6 +276,29 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
                                 <label htmlFor="bank-name" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Bank Name</label>
                                 <input id="bank-name" type="text" className="form-input flex-1" placeholder="Enter Bank Name" />
                             </div>
+
+                             <div className="mt-4 flex items-center">
+                                <label htmlFor="swiftNumber" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">SWIFT Number</label>
+                                <input id="swiftNumber" type="text" className="form-input flex-1" placeholder="Enter SWIFT Number" />
+                            </div>
+                            <div className="mt-4 flex items-center">
+                                <label htmlFor="ibanNumber" className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">IBAN Number</label>
+                                <input id="ibanNumber" type="text" className="form-input flex-1" placeholder="Enter IBAN Number" />
+                            </div>
+                            <div className="mt-4 flex items-center">
+                                <label className="ltr:mr-2 rtl:ml-2 w-1/3 mb-0">Country</label>
+                                <select id="country"
+                                    className="form-select flex-1">
+                                    <option value="">Choose Country</option>
+                                    {['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India'].map(
+                                    (c) => (
+                                        <option key={c} value={c}>
+                                        {c}
+                                        </option>
+                                    )
+                                    )}
+                                </select>
+                                </div>
                         </div>
                     </div>
                 </div>
@@ -201,8 +325,9 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
                                 {items.map((item: any) => (
                                     <tr className="align-top" key={item.id}>
                                         <td>
-                                            <input type="text" className="form-input min-w-[200px]" placeholder="Enter Item Name" defaultValue={item.title} />
-                                            <textarea className="form-textarea mt-4" placeholder="Enter Description" defaultValue={item.description}></textarea>
+                                            <input type="text" className="form-input min-w-[200px]" placeholder="Enter Item Name"     onChange={(e) => changeItemField(item.id, 'title', e.target.value)} defaultValue={item.title} />
+                                            <textarea className="form-textarea mt-4" placeholder="Enter Description" onChange={(e) => changeItemField(item.id, 'description', e.target.value)}
+ defaultValue={item.description}></textarea>
                                         </td>
                                         <td>
                                             <input
@@ -291,11 +416,12 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
 
                 <div className="panel">
                     <div className="grid xl:grid-cols-1 lg:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4">
-                        <button type="button" className="btn btn-success w-full gap-2" onClick={saveInvoice}>
+                        <button type="button" className="btn btn-success w-full gap-2" onClick={saveInvoice}
+  disabled={saving}>
                             <IconSave className="ltr:mr-2 rtl:ml-2 shrink-0" /> Save
                         </button>
 
-                        <button type="button" className="btn btn-info w-full gap-2">
+                        {/* <button type="button" className="btn btn-info w-full gap-2">
                             <IconSend className="ltr:mr-2 rtl:ml-2 shrink-0" /> Send Invoice
                         </button>
 
@@ -305,7 +431,7 @@ const [selectedCurrency, setSelectedCurrency] = useState("USD - US Dollar");
 
                         <button type="button" className="btn btn-secondary w-full gap-2">
                             <IconDownload className="ltr:mr-2 rtl:ml-2 shrink-0" /> Download
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
