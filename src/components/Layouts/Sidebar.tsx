@@ -208,7 +208,7 @@ const filteredMenuItems = menuItems
         <div className="bg-white dark:bg-black h-full">
           <div className="flex justify-between items-center px-12 py-3">
             <NavLink to="/" className="main-logo flex items-center shrink-0 ">
-              <img className="w-20 flex-none" src="/public/assets/orllogo.png" alt="logo" />
+              <img className="w-20 flex-none" src="/assets/orllogo.png" alt="logo" />
             </NavLink>
 
             <button

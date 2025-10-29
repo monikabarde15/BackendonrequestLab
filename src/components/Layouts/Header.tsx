@@ -203,7 +203,7 @@ const userID = JSON.parse(localStorage.getItem("userId") || "{}");
                 <div className="relative bg-white flex w-full items-center px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
                         <Link to="/" className="main-logo flex items-center shrink-0">
-                            <img className="w-8 ltr:-ml-1 rtl:-mr-1 inline" src="/public/assets/orllogo.png" alt="logo" />
+                            <img className="w-8 ltr:-ml-1 rtl:-mr-1 inline" src="/assets/orllogo.png" alt="logo" />
                             <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5  font-semibold  align-middle hidden md:inline dark:text-white-light transition-all duration-300"></span>
                         </Link>
                         <button
@@ -488,12 +488,12 @@ const userID = JSON.parse(localStorage.getItem("userId") || "{}");
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
-                                button={<img className="w-18 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/public/assets/orllogo.png" alt="userProfile" />}
+                                button={<img className="w-18 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/orllogo.png" alt="userProfile" />}
                             >
                                 <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
-                                            <img className="rounded-md w-10 h-10 object-cover" src="/public/assets/orllogo.png" alt="userProfile" />
+                                            <img className="rounded-md w-10 h-10 object-cover" src="/assets/orllogo.png" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4 truncate">
                                                 <h4 className="text-base">
                                                     {username}
