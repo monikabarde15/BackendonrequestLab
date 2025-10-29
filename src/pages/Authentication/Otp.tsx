@@ -53,45 +53,27 @@ const OtpVerification = () => {
 
       const data = response.data;
 
-      // ✅ If verification success → store like login
-      if (data.access && data.user) {
-        // 🟩 Set cookies
-        document.cookie = `username=${encodeURIComponent(
-          data.user.username
-        )}; path=/; max-age=86400`;
-        document.cookie = `user_id=${encodeURIComponent(
-          data.user.id
-        )}; path=/; max-age=86400`;
-        document.cookie = `email=${encodeURIComponent(
-          data.user.email
-        )}; path=/; max-age=86400`;
-        document.cookie = `is_staff=${data.user.is_staff}; path=/; max-age=86400`;
-        document.cookie = `access=${data.access}; path=/; max-age=86400`;
+     if(response.data.message=="Email already verified"){
+        toast.error(response.data.message);
+          setTimeout(() => {
+              window.location.href = "/login";
+            }, 1200);
+        }else{
+            toast.success(i18next.t("✅ Email verified successfully!"), {
+              position: "top-center",
+              style: {
+                background: "#4CAF50",
+                color: "white",
+                fontWeight: "bold",
+                borderRadius: "8px",
+              },
+            });
 
-        // 🟩 Save in localStorage
-        localStorage.setItem("jwt-auth", data.access);
-        localStorage.setItem("userId", data.user.id);
-        localStorage.setItem("email", data.user.email);
-        localStorage.setItem("username", data.user.username);
-
-        toast.success(i18next.t("Email verified successfully!"), {
-          position: "top-center",
-        });
-
-        // Redirect just like login
-        setTimeout(() => {
-          if (data.user.id < 2) {
-            window.location.href = "/index";
-          } else {
-            window.location.href = "/index/overview";
-          }
-        }, 1200);
-      } else {
-        toast.error(
-          i18next.t(data?.message || "Invalid OTP or expired."),
-          { position: "top-center" }
-        );
-      }
+            // ✅ Redirect after 1.2s to login page
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 1200);
+        }
     } catch (error: any) {
       console.error(error);
       const serverError =
@@ -201,17 +183,16 @@ console.log("accessToken=",accessToken);
         </form>
 
         <div className="text-center mt-6 text-sm dark:text-white">
-          {i18next.t("Didn’t receive OTP?")}{" "}
-          <button
+          {i18next.t("Login")}{" "}
+           <a href="/login">  <button
             type="button"
-            disabled={resending}
-            onClick={handleResendOTP}
+           
             className="text-primary font-semibold underline"
           >
             {resending
-              ? i18next.t("Resending...")
-              : i18next.t("Resend OTP")}
-          </button>
+              ? i18next.t("Here...")
+              : i18next.t("Here")}
+          </button></a>
         </div>
       </div>
 
