@@ -257,12 +257,16 @@ const UsersList = () => {
                     </button>
                   </td>
                   <td>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => deleteUser(u)}
-                    >
-                      Delete
-                    </button>
+                   <button
+                    className={`btn btn-sm ${
+                      u.id < 2 ? "btn-secondary opacity-50 cursor-not-allowed" : "btn-danger"
+                    }`}
+                    onClick={() => deleteUser(u)}
+                    disabled={u.id < 2}
+                  >
+                    Delete
+                  </button>
+
                   </td>
                 </tr>
               ))
