@@ -1,5 +1,13 @@
 import { lazy } from 'react';
 const Index = lazy(() => import('../pages/Index'));
+ 
+const Overview = lazy(() => import('../pages/Dashboard'));
+const MessagesList = lazy(() => import('../pages/MessagesList'));
+const AdminMessages = lazy(() => import('../pages/AdminMessages'));
+
+const ChangePasswordPortal = lazy(() => import('../pages/ChangePassword'));
+
+
 const Analytics = lazy(() => import('../pages/Analytics'));
 const Finance = lazy(() => import('../pages/Finance'));
 const Crypto = lazy(() => import('../pages/Crypto'));
@@ -9,6 +17,16 @@ const Blogs = lazy(() => import('../pages/Apps/Blogs'));
 const Mailbox = lazy(() => import('../pages/Apps/Mailbox'));
 const Notes = lazy(() => import('../pages/Apps/Notes'));
 const Contacts = lazy(() => import('../pages/Apps/Contacts'));
+const FeedbackListNew = lazy(() => import('../pages/Components/FeedbackListNew.tsx'));
+const PaymentList = lazy(() => import('../pages/Components/PaymentList.tsx'));
+const PaymentListNormal = lazy(() => import('../pages/Components/PaymentListNormal.tsx'));
+
+const LabList = lazy(() => import('../pages/Components/LabList.tsx'));
+const LabListNormal = lazy(() => import('../pages/Components/LabListNormal.tsx'));
+
+const UsersList = lazy(() => import('../pages/Components/UserList.tsx'));
+
+
 const Chat = lazy(() => import('../pages/Apps/Chat'));
 const Scrumboard = lazy(() => import('../pages/Apps/Scrumboard'));
 const Calendar = lazy(() => import('../pages/Apps/Calendar'));
@@ -118,17 +136,61 @@ const QuillEditor = lazy(() => import('../pages/Forms/QuillEditor'));
 const MarkDownEditor = lazy(() => import('../pages/Forms/MarkDownEditor'));
 const DateRangePicker = lazy(() => import('../pages/Forms/DateRangePicker'));
 const Clipboard = lazy(() => import('../pages/Forms/Clipboard'));
+const Otp = lazy(() => import('../pages/Authentication/Otp'));
+
+const Home = lazy(() => import('../pages/websites/Home'));
+const PrivacyPolicy = lazy(() => import('../pages/Components/PrivacyPolicy'));
+const TermsCondition = lazy(() => import('../pages/Components/TermsCondition'));
+const RefoundPolicy = lazy(() => import('../pages/Components/RefoundPolicy'));
 
 const routes = [
     // dashboard
+     {
+        path: '/',
+        element: <Home />,
+        layout:'web',
+    },
     {
         path: '/index',
         element: <Index />,
     },
-    // {
-    //     path: '/index',
-    //     element: <Index />,
-    // },
+     {
+        path: '/otp',
+        element: <Otp />,
+        layout:'web',
+    },
+    {
+        path: '/privacy-policy',
+        element: <PrivacyPolicy />,
+        layout:'web',
+    },
+    {
+        path: '/terms',
+        element: <TermsCondition />,
+        layout:'web',
+    },
+    {
+        path: '/refunds',
+        element: <RefoundPolicy />,
+        layout:'web',
+    },
+     {
+        path: '/index/overview',
+         element: <Overview />,
+    },
+    {
+        path: '/Messages',
+         element: <MessagesList />,
+    },
+    {
+        path: '/AdminMessages',
+         element: <AdminMessages />,
+    },
+    {
+        path: '/change-password',
+         element: <ChangePasswordPortal />,
+    },
+   
     // analytics page
     {
         path: '/analytics',
@@ -156,6 +218,31 @@ const routes = [
         path: '/apps/notes',
         element: <Notes />,
     },
+    {
+        path: '/apps/FeedbackList',
+        element: <FeedbackListNew />,
+    },
+    {
+        path: '/apps/LabList',
+        element: <LabList />,
+    },
+    {
+        path: '/apps/LabListNormal',
+        element: <LabListNormal />,
+    },
+    {
+        path: '/apps/PaymentListNormal',
+        element: <PaymentListNormal />,
+    },
+     {
+        path: '/apps/PaymentList',
+        element: <PaymentList />,
+    },
+    {
+        path: '/apps/UsersList',
+        element: <UsersList />,
+    },
+    
     {
         path: '/apps/contacts',
         element: <Contacts />,
@@ -500,9 +587,9 @@ const routes = [
     },
     //Authentication
     {
-        path: '/',
+        path: '/login',
         element: <LoginBoxed />,
-        layout: 'blank',
+        layout: 'web',
     },
     {
         path: '/auth/boxed-signup',

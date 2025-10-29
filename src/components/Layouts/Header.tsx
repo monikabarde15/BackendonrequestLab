@@ -34,11 +34,27 @@ import IconMenuPages from '../Icon/Menu/IconMenuPages';
 import IconMenuMore from '../Icon/Menu/IconMenuMore';
 import { useNavigate } from "react-router-dom";
 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Header = () => {
+<ToastContainer
+        position="top-center"
+        autoClose={1500}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        theme="colored"
+      />
     //   const navigate = useNavigate();
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     const location = useLocation();
     useEffect(() => {
+        const token = localStorage.getItem("jwt-auth");
+    setIsLoggedIn(!!token);
+
         const selector = document.querySelector('ul.horizontal-menu a[href="' + window.location.pathname + '"]');
         if (selector) {
             selector.classList.add('active');
@@ -126,6 +142,15 @@ const Header = () => {
     const removeNotification = (value: number) => {
         setNotifications(notifications.filter((user) => user.id !== value));
     };
+    function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+    if (match) return match[2];
+    return null;
+  }
+  const email = getCookie("email");
+const user1 = localStorage.getItem("email");
+  const username = getCookie("username");
+  console.log("email=",user1,"username=",username);
 
     const [search, setSearch] = useState(false);
 
@@ -142,27 +167,35 @@ const Header = () => {
     const { t } = useTranslation();
 const user = JSON.parse(localStorage.getItem("user") || "{}");
 const role = user?.user?.role;
-console.log(user);
+const userIDnew = JSON.parse(localStorage.getItem("userId") || "{}");
+console.log('userIDnew=',userIDnew);
+
 
     const navigate = useNavigate();
-   if (!user || Object.keys(user).length === 0) {
+   if (!userIDnew) {
   console.log("log");
   navigate('/');
 }
 
         const logout = () => {
-            // Clear user state
-            dispatch({ type: 'LOGOUT' }); // Or your auth slice action
-            // Clear tokens/cookies if any
-            localStorage.removeItem('token'); // example
-            // Redirect to login page
-            if(role=="employee"){
-                navigate('/auth/cover-login');
-            }else{
-                navigate('/');
-            }
+           localStorage.removeItem("jwt-auth");
+
+    // Clear all cookies
+    document.cookie.split(";").forEach((cookie) => {
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    });
+
+    setIsLoggedIn(false);
+    toast.info("You have been logged out!", { position: "top-center" });
+
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 1500);
         };
 
+const userID = JSON.parse(localStorage.getItem("userId") || "{}");
 
     return (
         <header className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}>
@@ -170,7 +203,7 @@ console.log(user);
                 <div className="relative bg-white flex w-full items-center px-5 py-2.5 dark:bg-black">
                     <div className="horizontal-logo flex lg:hidden justify-between items-center ltr:mr-2 rtl:ml-2">
                         <Link to="/" className="main-logo flex items-center shrink-0">
-                            <img className="w-8 ltr:-ml-1 rtl:-mr-1 inline" src="/assets/images/cybblackpink.png" alt="logo" />
+                            <img className="w-8 ltr:-ml-1 rtl:-mr-1 inline" src="/public/assets/orllogo.png" alt="logo" />
                             <span className="text-2xl ltr:ml-1.5 rtl:mr-1.5  font-semibold  align-middle hidden md:inline dark:text-white-light transition-all duration-300"></span>
                         </Link>
                         <button
@@ -186,26 +219,36 @@ console.log(user);
 
                     <div className="ltr:mr-2 rtl:ml-2 hidden sm:block">
                         <ul className="flex items-center space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
-                            <li>
+                            {/*<li>
                                 <Link to="/apps/calendar" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
                                     <IconCalendar />
                                 </Link>
-                            </li>
+                            </li>*/}
                             <li>
-                                <Link to="/apps/todolist" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
+                                <Link to="/change-password" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
                                     <IconEdit />
                                 </Link>
                             </li>
-                            <li>
-                                <Link to="/apps/chat" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
-                                    <IconChatNotification />
-                                </Link>
-                            </li>
+                           {
+  userID < 2 ? (
+    <li>
+      <Link to="/AdminMessages" className="block p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
+        <IconChatNotification />
+      </Link>
+    </li>
+  ) : (
+    <li>
+      <Link to="/Messages" className="hidden p-2 rounded-full bg-white-light/40 dark:bg-dark/40 hover:text-primary hover:bg-white-light/90 dark:hover:bg-dark/60">
+      </Link>
+    </li>
+  )
+}
+
                         </ul>
                     </div>
                     <div className="sm:flex-1 ltr:sm:ml-0 ltr:ml-auto sm:rtl:mr-0 rtl:mr-auto flex items-center space-x-1.5 lg:space-x-2 rtl:space-x-reverse dark:text-[#d0d2d6]">
                         <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
-                            <form
+                          {/*  <form
                                 className={`${search && '!block'} sm:relative absolute inset-x-0 sm:top-0 top-1/2 sm:translate-y-0 -translate-y-1/2 sm:mx-0 mx-4 z-10 sm:block hidden`}
                                 onSubmit={() => setSearch(false)}
                             >
@@ -222,7 +265,7 @@ console.log(user);
                                         <IconXCircle />
                                     </button>
                                 </div>
-                            </form>
+                            </form>*/}
                             <button
                                 type="button"
                                 onClick={() => setSearch(!search)}
@@ -274,7 +317,7 @@ console.log(user);
                                 </button>
                             )}
                         </div>
-                        <div className="dropdown shrink-0">
+                        {/*<div className="dropdown shrink-0">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
@@ -439,30 +482,30 @@ console.log(user);
                                     )}
                                 </ul>
                             </Dropdown>
-                        </div>
+                        </div>*/}
                         <div className="dropdown shrink-0 flex">
                             <Dropdown
                                 offset={[0, 8]}
                                 placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
                                 btnClassName="relative group block"
-                                button={<img className="w-9 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/assets/images/cybblackpink.png" alt="userProfile" />}
+                                button={<img className="w-18 h-9 rounded-full object-cover saturate-50 group-hover:saturate-100" src="/public/assets/orllogo.png" alt="userProfile" />}
                             >
                                 <ul className="text-dark dark:text-white-dark !py-0 w-[230px] font-semibold dark:text-white-light/90">
                                     <li>
                                         <div className="flex items-center px-4 py-4">
-                                            <img className="rounded-md w-10 h-10 object-cover" src="/assets/images/cybblackpink.png" alt="userProfile" />
+                                            <img className="rounded-md w-10 h-10 object-cover" src="/public/assets/orllogo.png" alt="userProfile" />
                                             <div className="ltr:pl-4 rtl:pr-4 truncate">
                                                 <h4 className="text-base">
-                                                    John Doe
+                                                    {username}
                                                     <span className="text-xs bg-success-light rounded text-success px-1 ltr:ml-2 rtl:ml-2">Pro</span>
                                                 </h4>
-                                                <button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
-                                                    johndoe@gmail.com
-                                                </button>
+                                                {/*<button type="button" className="text-black/60 hover:text-primary dark:text-dark-light/60 dark:hover:text-white">
+                                                    {email}
+                                                </button>*/}
                                             </div>
                                         </div>
                                     </li>
-                                    <li>
+                                    {/*<li>
                                         <Link to="/users/profile" className="dark:hover:text-white">
                                             <IconUser className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
                                             Profile
@@ -479,7 +522,7 @@ console.log(user);
                                             <IconLockDots className="w-4.5 h-4.5 ltr:mr-2 rtl:ml-2 shrink-0" />
                                             Lock Screen
                                         </Link>
-                                    </li>
+                                    </li>*/}
                                     <li className="border-t border-white-light dark:border-white-light/10">
                                        <button
                                             onClick={logout}

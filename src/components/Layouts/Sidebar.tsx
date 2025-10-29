@@ -48,7 +48,8 @@ const Sidebar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-
+const userID = JSON.parse(localStorage.getItem("userId") || "{}");
+console.log('userID=',userID);
   // Fetch employee details and permissions
   const fetchEmployeeDetails = async () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -96,119 +97,81 @@ const Sidebar = () => {
     setCurrentMenu((oldValue) => (oldValue === value ? '' : value));
   };
 
-  // Full menu structure
-  const menuItems: MenuItem[] = [
-    {
-      key: "dashboard",
-      label: "dashboard",
-      icon: IconMenuDashboard,
-      subMenu: [
-        { path: "/index", label: "sales", permission: "sales" },
-        // { path: "/analytics", label: "analytics", permission: "analytics" },
-        // { path: "/finance", label: "finance", permission: "finance" },
-        // { path: "/crypto", label: "crypto", permission: "crypto" },
-      ],
-    },
-    {
-      sectionLabel: "apps",
-      items: [
-        // { path: "/apps/todolist", label: "todo_list", icon: IconMenuTodo, permission: "todolist" },
-         { path: "/apps/Blogs", label: "Blogs", icon: IconMenuTodo, permission: "Blogs" },
-        // { path: "/apps/notes", label: "notes", icon: IconMenuNotes, permission: "notes" },
-        { path: "/apps/scrumboard", label: "scrumboard", icon: IconMenuScrumboard, permission: "scrumboard" },
-        { path: "/apps/contacts", label: "contacts", icon: IconMenuContacts, permission: "contacts" },
-        { path: "/apps/calendar", label: "calendar", icon: IconMenuCalendar, permission: "calendar" },
-      ],
-    },
-    {
-      key: "invoice",
-      label: "invoice",
-      icon: IconMenuInvoice,
-      subMenu: [
-        { path: "/apps/invoice/list", label: "list", permission: "invoice_list" },
-        { path: "/apps/invoice/add", label: "add", permission: "invoice_add" },
-      ],
-    },
-    {
-      key: "expenses",
-      label: "Expenses",
-      icon: IconMenuInvoice,
-      subMenu: [
-        { path: "/apps/expenses/list", label: "list", permission: "expenses_list" },
-        { path: "/apps/expenses/add", label: "add", permission: "expenses_add" },
-      ],
-    },
-     {
-      key: "estimation",
-      label: "Estimation",
-      icon: IconMenuInvoice,
-      subMenu: [
-        { path: "/apps/Estimation/list", label: "list", permission: "estimation_list" },
-        { path: "/apps/Estimation/add", label: "add", permission: "estimation_add" },
-      ],
-    },
-    {
-      sectionLabel: "employee management",
-      items: [
-        { path: "/apps/employee/list", label: "Employee List", icon: IconMenuTodo, permission: "employeelist" },
-        { path: "/datatables/order-sorting", label: "Role & Permission", icon: IconMenuTodo, permission: "roles" },
-      ],
-    },
-    {
-        sectionLabel: "Tables And Forms",
-      key: "datatables",
-      label: "datatables",
-      icon: IconMenuDatatables,
-      subMenu: [
-        { path: "/datatables/basic", label: "basic", permission: "datatables_basic" },
-        { path: "/datatables/advanced", label: "advanced", permission: "datatables_advanced" },
-        { path: "/datatables/skin", label: "skin", permission: "datatables_skin" },
-        { path: "/datatables/order-sorting", label: "order_sorting", permission: "datatables_order" },
-      ],
-    },
-    {
-      key: "forms",
-      label: "forms",
-      icon: IconMenuForms,
-      subMenu: [
-        { path: "/forms/basic", label: "basic", permission: "forms_basic" },
-        { path: "/forms/input-group", label: "input_group", permission: "forms_input" },
-      ],
-    },
-    {
-      key: "users",
-      label: "users",
-      icon: IconMenuUsers,
-      subMenu: [
-        { path: "/users/profile", label: "profile", permission: "users_profile" },
-        { path: "/users/user-account-settings", label: "account_settings", permission: "users_settings" },
-      ],
-    },
-    {
-      key: "pages",
-      label: "pages",
-      icon: IconMenuPages,
-      subMenu: [
-        { path: "/pages/knowledge-base", label: "knowledge_base", permission: "pages_kb" },
-        { path: "/pages/faq", label: "faq", permission: "pages_faq" },
-      ],
-    },
-    {
-      key: "auth",
-      label: "authentication",
-      icon: IconMenuAuthentication,
-      subMenu: [
-        { path: "/auth/boxed-signin", label: "login_boxed", permission: "auth_login" },
-        { path: "/auth/boxed-signup", label: "register_boxed", permission: "auth_register" },
-      ],
-    },
-    // {
-    //   sectionLabel: "supports",
-    //   items: [
-    //     { path: "https://vristo.sbthemes.com", label: "documentation", icon: IconMenuDocumentation, external: true },
-    //   ],
-    // },
-  ];
+const menuItems: MenuItem[] = [
+  {
+    key: "dashboard",
+    label: "dashboard",
+    icon: IconMenuDashboard,
+    subMenu: [
+      { 
+        path: userID < 2 ? "/index" : "/index/overview", 
+        label: "dashboard", 
+        permission: "sales" 
+      },
+    ],
+  },
+
+  // Conditional "User management" section
+  ...(userID < 2
+    ? [
+        {
+          sectionLabel: "User management",
+          key: "users",
+          label: "users",
+          icon: IconMenuUsers,
+          subMenu: [
+            { path: "/apps/UsersList", label: "Users List", permission: "Users" },
+          ],
+        },
+      ]
+    : []), // ✅ empty array instead of ''
+
+  {
+    sectionLabel: "lab management",
+    items: [
+      { 
+        path: userID < 2 ? "/apps/LabList" : "/apps/LabListNormal",
+        label: "Lab List", 
+        icon: IconMenuContacts, 
+        permission: "LabList" 
+      },
+    ],
+  },
+
+  {
+    sectionLabel: "Payment management",
+    items: [
+      { 
+        path: userID < 2 ? "/apps/PaymentList" : "/apps/PaymentListNormal",
+        label: "PaymentList", 
+        icon: IconMenuContacts, 
+        permission: "PaymentList" 
+      },
+    ],
+  },
+];
+
+// Conditional support section
+if (userID < 2) {
+  menuItems.push({
+    sectionLabel: "user support",
+    items: [
+      { path: "/apps/contacts", label: "contacts", icon: IconMenuContacts, permission: "contacts" },
+      { path: "/apps/FeedbackList", label: "Feedback List", icon: IconMenuContacts, permission: "FeedbackListNew" },
+      { path: "/change-password", label: "Change Password", icon: IconMenuContacts, permission: "contacts" },
+      { path: "/AdminMessages", label: "Support", icon: IconMenuContacts, permission: "contacts" },
+    ],
+  });
+} else {
+  menuItems.push({
+    sectionLabel: "Customer support",
+    items: [
+      //{ path: "/Messages", label: "Customer Support", icon: IconMenuContacts, permission: "contacts" },
+      { path: "/change-password", label: "Change Password", icon: IconMenuContacts, permission: "contacts" },
+    ],
+  });
+}
+  
 
   // Filter menu for employee
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -245,7 +208,7 @@ const filteredMenuItems = menuItems
         <div className="bg-white dark:bg-black h-full">
           <div className="flex justify-between items-center px-12 py-3">
             <NavLink to="/" className="main-logo flex items-center shrink-0 ">
-              <img className="w-20 flex-none" src="/assets/images/cybblackpink.png" alt="logo" />
+              <img className="w-20 flex-none" src="/public/assets/orllogo.png" alt="logo" />
             </NavLink>
 
             <button

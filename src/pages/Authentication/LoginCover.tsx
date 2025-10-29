@@ -1,152 +1,243 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { setPageTitle, toggleRTL } from '../../store/themeConfigSlice';
-import Dropdown from '../../components/Dropdown';
-import { IRootState } from '../../store';
-import i18next from 'i18next';
-import IconCaretDown from '../../components/Icon/IconCaretDown';
-import IconUser from '../../components/Icon/IconUser';
-import IconMail from '../../components/Icon/IconMail';
-import IconLockDots from '../../components/Icon/IconLockDots';
-import IconInstagram from '../../components/Icon/IconInstagram';
-import IconFacebookCircle from '../../components/Icon/IconFacebookCircle';
-import IconTwitter from '../../components/Icon/IconTwitter';
-import IconGoogle from '../../components/Icon/IconGoogle';
-import axios from 'axios';
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { IRootState } from "../../store";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { setPageTitle, toggleRTL } from "../../store/themeConfigSlice";
+import Dropdown from "../../components/Dropdown";
+import i18next from "i18next";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-const RegisterCover = () => {
-    const dispatch = useDispatch();
+import IconCaretDown from "../../components/Icon/IconCaretDown";
+import IconMail from "../../components/Icon/IconMail";
+import IconLockDots from "../../components/Icon/IconLockDots";
+import IconInstagram from "../../components/Icon/IconInstagram";
+import IconFacebookCircle from "../../components/Icon/IconFacebookCircle";
+import IconTwitter from "../../components/Icon/IconTwitter";
+import IconGoogle from "../../components/Icon/IconGoogle";
+
+const LoginBoxed = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const isRtl = useSelector((state: IRootState) => state.themeConfig.rtlClass) === 'rtl';
-  const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-  const [flag, setFlag] = useState(themeConfig.locale);
+  const themeConfig =
+    useSelector((state: IRootState) => state.themeConfig) || {};
+  const isRtl =
+    useSelector((state: IRootState) => state.themeConfig.rtlClass) === "rtl";
 
-  // Added employeeNumber state
-  // const [employeeNumber, setEmployeeNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [flag, setFlag] = useState(themeConfig.locale || "en");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // 🟩 Default languages if not defined in themeConfig
+  const languageList =
+    themeConfig.languageList ||
+    [
+      { code: "en", name: "English" },
+      { code: "ae", name: "Arabic" },
+    ];
 
   useEffect(() => {
-    dispatch(setPageTitle('Login Cover'));
+    dispatch(setPageTitle("Login Boxed"));
   }, [dispatch]);
 
+  // 🌍 Change Language
   const setLocale = (flag: string) => {
     setFlag(flag);
-    if (flag.toLowerCase() === 'ae') {
-      dispatch(toggleRTL('rtl'));
-    } else {
-      dispatch(toggleRTL('ltr'));
-    }
+    dispatch(toggleRTL(flag.toLowerCase() === "ae" ? "rtl" : "ltr"));
+    i18next.changeLanguage(flag);
+    toast.info(`Language changed to ${flag.toUpperCase()}`, {
+      position: "top-center",
+    });
   };
 
+  // 🔐 Submit Login
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!username.trim() || !password.trim()) {
+      setError("Please fill in all fields.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await axios.post('https://cybitbackend.onrender.com/api/authEmployee/login', {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "https://backend.onrequestlab.com/api/v1/users/auth/login",
+        { username, password },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
 
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem("user", JSON.stringify(response.data));
-      alert('Login Successful');
-      navigate('/');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Login failed');
+      const data = response.data;
+
+      // ✅ Successful login
+      if (data.user) {
+        document.cookie = `username=${encodeURIComponent(
+          data.user.username
+        )}; path=/; max-age=86400`;
+        document.cookie = `user_id=${encodeURIComponent(
+          data.user.id
+        )}; path=/; max-age=86400`;
+        document.cookie = `email=${encodeURIComponent(
+          data.user.email
+        )}; path=/; max-age=86400`;
+        document.cookie = `is_staff=${data.user.is_staff}; path=/; max-age=86400`;
+        document.cookie = `access=${data.access}; path=/; max-age=86400`;
+        localStorage.setItem("jwt-auth", data.access);
+ localStorage.setItem("email", data.user.email);
+        toast.success("Login successful!", { position: "top-center" });
+
+        setTimeout(() => {
+          if (data.user.id === 7) {
+            window.location.href = "/";
+          } else {
+            window.location.href = "/index";
+          }
+        }, 1200);
+      } else {
+        toast.error(data.message || "Login failed", { position: "top-center" });
+      }
+    } catch (err: any) {
+      console.error(err);
+
+      // 🟥 Handle server error messages
+      let msg = "Invalid username or password.";
+
+      if (err.response?.data) {
+        const data = err.response.data;
+
+        // Handle structured validation error
+        if (typeof data === "object" && !Array.isArray(data)) {
+          const firstKey = Object.keys(data)[0];
+          if (firstKey && Array.isArray(data[firstKey])) {
+            msg = data[firstKey][0];
+          } else if (data.error) {
+            msg = data.error;
+          } else if (data.message) {
+            msg = data.message;
+          } else if (data.detail) {
+            msg = data.detail;
+          }
+        } else if (typeof data === "string") {
+          msg = data;
+        }
+      }
+
+      setError(msg);
+      toast.error(msg, { position: "top-center" });
+    } finally {
+      setLoading(false);
     }
   };
 
-    return (
-        <div>
-            <div className="absolute inset-0">
-                <img src="/assets/images/auth/bg-gradient.png" alt="image" className="h-full w-full object-cover" />
-            </div>
-            <div className="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center bg-no-repeat px-6 py-10 dark:bg-[#060818] sm:px-16">
-                <img src="/assets/images/auth/coming-soon-object1.png" alt="image" className="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2" />
-                <img src="/assets/images/auth/coming-soon-object2.png" alt="image" className="absolute left-24 top-0 h-40 md:left-[30%]" />
-                <img src="/assets/images/auth/coming-soon-object3.png" alt="image" className="absolute right-0 top-0 h-[300px]" />
-                <img src="/assets/images/auth/polygon-object.svg" alt="image" className="absolute bottom-0 end-[28%]" />
-                <div className="relative flex w-full max-w-[1502px] flex-col justify-between overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:min-h-[758px] lg:flex-row lg:gap-10 xl:gap-0">
-                    <div className="relative hidden w-full items-center justify-center bg-[linear-gradient(225deg,rgba(239,18,98,1)_0%,rgba(67,97,238,1)_100%)] p-5 lg:inline-flex lg:max-w-[835px] xl:-ms-28 ltr:xl:skew-x-[14deg] rtl:xl:skew-x-[-14deg]">
-                        <div className="absolute inset-y-0 w-8 from-primary/10 via-transparent to-transparent ltr:-right-10 ltr:bg-gradient-to-r rtl:-left-10 rtl:bg-gradient-to-l xl:w-16 ltr:xl:-right-20 rtl:xl:-left-20"></div>
-                        <div className="ltr:xl:-skew-x-[14deg] rtl:xl:skew-x-[14deg]">
-                            <Link to="/" className="w-48 block lg:w-72 ms-10">
-                                <img src="/assets/images/123.png" alt="Logo" className="w-full" />
-                            </Link>
-                            <div className="mt-24 hidden w-full max-w-[430px] lg:block">
-                                <img src="/assets/images/image2.png" alt="Cover Image" className="w-full" />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="relative flex w-full flex-col items-center justify-center gap-6 px-4 pb-16 pt-6 sm:px-6 lg:max-w-[667px]">
-                        <div className="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full">
-                            <Link to="/" className="w-8 block lg:hidden">
-                                <img src="/assets/images/logo.svg" alt="Logo" className="mx-auto w-10" />
-                            </Link>
-                            <div className="dropdown ms-auto w-max">
-                                <Dropdown
-                                    offset={[0, 8]}
-                                    placement={`${isRtl ? 'bottom-start' : 'bottom-end'}`}
-                                    btnClassName="flex items-center gap-2.5 rounded-lg border border-white-dark/30 bg-white px-2 py-1.5 text-white-dark hover:border-primary hover:text-primary dark:bg-black"
-                                    button={
-                                        <>
-                                            <div>
-                                                <img src={`/assets/images/flags/${flag.toUpperCase()}.svg`} alt="image" className="h-5 w-5 rounded-full object-cover" />
-                                            </div>
-                                            <div className="text-base font-bold uppercase">{flag}</div>
-                                            <span className="shrink-0">
-                                                <IconCaretDown />
-                                            </span>
-                                        </>
-                                    }
-                                >
-                                    <ul className="!px-2 text-dark dark:text-white-dark grid grid-cols-2 gap-2 font-semibold dark:text-white-light/90 w-[280px]">
-                                        {themeConfig.languageList.map((item: any) => {
-                                            return (
-                                                <li key={item.code}>
-                                                    <button
-                                                        type="button"
-                                                        className={`flex w-full hover:text-primary rounded-lg ${flag === item.code ? 'bg-primary/10 text-primary' : ''}`}
-                                                        onClick={() => {
-                                                            i18next.changeLanguage(item.code);
-                                                            // setFlag(item.code);
-                                                            setLocale(item.code);
-                                                        }}
-                                                    >
-                                                        <img src={`/assets/images/flags/${item.code.toUpperCase()}.svg`} alt="flag" className="w-5 h-5 object-cover rounded-full" />
-                                                        <span className="ltr:ml-3 rtl:mr-3">{item.name}</span>
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                </Dropdown>
-                            </div>
-                        </div>
-                        <div className="w-full max-w-[440px] lg:mt-16">
-                            <div className="mb-10">
-                                <h1 className="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl">Log In</h1>
-                                <p className="text-base font-bold leading-normal text-white-dark">Enter your email and password to register</p>
-                            </div>
-                           <form onSubmit={submitForm} className="space-y-5 dark:text-white">
-                {/* Employee Number */}
-                
+  return (
+    <div>
+      <div className="absolute inset-0">
+        <img
+          src="/assets/images/auth/bg-gradient.png"
+          alt="background"
+          className="h-full w-full object-cover"
+        />
+      </div>
 
-                {/* Email */}
+      <div className="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center px-6 py-10 dark:bg-[#060818] sm:px-16">
+        <img
+          src="/assets/images/auth/coming-soon-object1.png"
+          alt=""
+          className="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2"
+        />
+        <img
+          src="/assets/images/auth/coming-soon-object2.png"
+          alt=""
+          className="absolute left-24 top-0 h-40 md:left-[30%]"
+        />
+        <img
+          src="/assets/images/auth/coming-soon-object3.png"
+          alt=""
+          className="absolute right-0 top-0 h-[300px]"
+        />
+        <img
+          src="/assets/images/auth/polygon-object.svg"
+          alt=""
+          className="absolute bottom-0 end-[28%]"
+        />
+
+        <div className="relative w-full max-w-[870px] rounded-md bg-white/60 dark:bg-black/50 p-2 backdrop-blur-lg shadow-lg">
+          <div className="relative flex flex-col justify-center rounded-md bg-white/80 px-6 lg:min-h-[758px] py-20 dark:bg-black/60">
+            {/* 🌍 Language Selector */}
+            <div className="absolute top-6 end-6">
+              <Dropdown
+                offset={[0, 8]}
+                placement={`${isRtl ? "bottom-start" : "bottom-end"}`}
+                btnClassName="flex items-center gap-2.5 rounded-lg border border-white-dark/30 bg-white px-2 py-1.5 text-white-dark hover:border-primary hover:text-primary dark:bg-black"
+                button={
+                  <>
+                    <img
+                      src={`/assets/images/flags/${flag.toUpperCase()}.svg`}
+                      alt="flag"
+                      className="h-5 w-5 rounded-full object-cover"
+                    />
+                    <div className="text-base font-bold uppercase">{flag}</div>
+                    <IconCaretDown />
+                  </>
+                }
+              >
+                <ul className="!px-2 grid grid-cols-2 gap-2 font-semibold w-[280px] text-dark dark:text-white">
+                  {languageList.map((item) => (
+                    <li key={item.code}>
+                      <button
+                        type="button"
+                        className={`flex w-full hover:text-primary rounded-lg ${
+                          flag === item.code ? "bg-primary/10 text-primary" : ""
+                        }`}
+                        onClick={() => setLocale(item.code)}
+                      >
+                        <img
+                          src={`/assets/images/flags/${item.code.toUpperCase()}.svg`}
+                          alt="flag"
+                          className="w-5 h-5 rounded-full object-cover"
+                        />
+                        <span className="ltr:ml-3 rtl:mr-3">{item.name}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </Dropdown>
+            </div>
+
+            {/* 🧾 Login Form */}
+            <div className="mx-auto w-full max-w-[440px]">
+              <div className="mb-10">
+                <h1 className="text-3xl font-extrabold uppercase text-primary md:text-4xl">
+                  {i18next.t("Sign in")} 1
+                </h1>
+                <p className="text-base font-bold text-white-dark">
+                  {i18next.t("Enter your credentials to log in")}
+                </p>
+              </div>
+
+              <form className="space-y-5 dark:text-white" onSubmit={submitForm}>
                 <div>
-                  <label htmlFor="Email">Email</label>
+                  <label htmlFor="Username">{i18next.t("Username")}</label>
                   <div className="relative text-white-dark">
                     <input
-                      id="Email"
-                      type="email"
-                      placeholder="Enter Email"
-                      className="form-input ps-10 placeholder:text-white-dark"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
+                      id="Username"
+                      type="text"
+                      placeholder={i18next.t("Enter Username")}
+                      className={`form-input ps-10 placeholder:text-white-dark ${
+                        error.toLowerCase().includes("username")
+                          ? "border-red-500"
+                          : ""
+                      }`}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                     <span className="absolute start-4 top-1/2 -translate-y-1/2">
                       <IconMail fill={true} />
@@ -154,18 +245,20 @@ const RegisterCover = () => {
                   </div>
                 </div>
 
-                {/* Password */}
                 <div>
-                  <label htmlFor="Password">Password</label>
+                  <label htmlFor="Password">{i18next.t("Password")}</label>
                   <div className="relative text-white-dark">
                     <input
                       id="Password"
                       type="password"
-                      placeholder="Enter Password"
-                      className="form-input ps-10 placeholder:text-white-dark"
+                      placeholder={i18next.t("Enter Password")}
+                      className={`form-input ps-10 placeholder:text-white-dark ${
+                        error.toLowerCase().includes("password")
+                          ? "border-red-500"
+                          : ""
+                      }`}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
                     />
                     <span className="absolute start-4 top-1/2 -translate-y-1/2">
                       <IconLockDots fill={true} />
@@ -173,30 +266,56 @@ const RegisterCover = () => {
                   </div>
                 </div>
 
+                {error && <p className="text-red-500 text-sm">{error}</p>}
+
                 <button
                   type="submit"
-                  className="btn btn-gradient !mt-6 w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
+                  disabled={loading}
+                  className="btn btn-gradient !mt-6 w-full uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
                 >
-                  Sign in
+                  {loading ? "Signing in..." : "Sign in"}
                 </button>
               </form>
 
+              {/* Social buttons */}
+              
 
-                           
-                           
-                            {/* <div className="text-center dark:text-white">
-                                Already have an account ?&nbsp;
-                                <Link to="/auth/cover-login" className="uppercase text-primary underline transition hover:text-black dark:hover:text-white">
-                                    SIGN IN
-                                </Link>
-                            </div> */}
-                        </div>
-                        <p className="absolute bottom-6 w-full text-center dark:text-white">© {new Date().getFullYear()}.VRISTO All Rights Reserved.</p>
-                    </div>
-                </div>
+              <ul className="flex justify-center gap-3 text-white">
+                {[IconInstagram, IconFacebookCircle, IconTwitter, IconGoogle].map(
+                  (Icon, idx) => (
+                    <li key={idx}>
+                      <Link
+                        to="#"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-full transition hover:scale-110"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(239,18,98,1) 0%, rgba(67,97,238,1) 100%)",
+                        }}
+                      >
+                        <Icon />
+                      </Link>
+                    </li>
+                  )
+                )}
+              </ul>
+
+              <div className="text-center mt-6 dark:text-white">
+                {i18next.t("Employee account?")}{" "}
+                <Link
+                  to="/auth/cover-login"
+                  className="uppercase text-primary underline transition hover:text-black dark:hover:text-white"
+                >
+                  {i18next.t("Employee Sign In")}
+                </Link>
+              </div>
             </div>
+          </div>
         </div>
-    );
+      </div>
+
+      <ToastContainer autoClose={2000} theme="colored" />
+    </div>
+  );
 };
 
-export default RegisterCover;
+export default LoginBoxed;

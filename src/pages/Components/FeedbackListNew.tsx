@@ -13,9 +13,9 @@ import IconTwitter from "../../components/Icon/IconTwitter";
 import IconX from "../../components/Icon/IconX";
 import axios from "axios";
 
-const API_URL = "https://backend.onrequestlab.com/api/v1/admin/contact/";
+const API_URL = "https://backend.onrequestlab.com/api/v1/admin/feedback/";
 
-const Contacts = () => {
+const FeedbackListNew = () => {
   const dispatch = useDispatch();
   const [addContactModal, setAddContactModal] = useState(false);
   const [value, setValue] = useState("list");
@@ -46,8 +46,8 @@ const Contacts = () => {
       setContactList(data);
       setFilteredItems(data);
     } catch (err) {
-      console.error("Error fetching contacts:", err);
-      showMessage("Failed to fetch contacts", "error");
+      console.error("Error fetching Feedback:", err);
+      showMessage("Failed to fetch Feedback", "error");
     } finally {
       setLoading(false);
     }
@@ -68,13 +68,13 @@ const Contacts = () => {
     if (!confirmDelete.isConfirmed) return;
 
     try {
-      await axios.delete(`${API_URL}${user.contact_id}/`, {
+      await axios.delete(`${API_URL}${user.feedback_id}/`, {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
         withCredentials: true,
       });
 
-      setContactList(contactList.filter((c) => c.contact_id !== user.contact_id));
-      showMessage("Contact deleted successfully!");
+      setContactList(contactList.filter((c) => c.feedback_id !== user.feedback_id));
+      showMessage("Feedback deleted successfully!");
     } catch (err) {
       console.error("Delete failed:", err);
       showMessage("Failed to delete contact", "error");
@@ -112,7 +112,7 @@ const Contacts = () => {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-xl font-semibold">Contacts</h2>
+        <h2 className="text-xl font-semibold">Feedback List</h2>
         <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
           <div className="flex gap-3">
             <button
@@ -138,7 +138,7 @@ const Contacts = () => {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search Contacts"
+              placeholder="Search Feedback"
               className="form-input py-2 ltr:pr-11 rtl:pl-11 peer"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -161,10 +161,9 @@ const Contacts = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Message</th>
+                  <th>Name</th>
+                  <th>subject</th>
+                  <th>description</th>
                   <th>Date</th>
                   <th className="!text-center">Actions</th>
                 </tr>
@@ -179,19 +178,18 @@ const Contacts = () => {
                 ) : filteredItems.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center text-muted py-4">
-                      No contacts found.
+                      No feedback found.
                     </td>
                   </tr>
                 ) : (
                   filteredItems.map((item) => (
-                    <tr key={item.contact_id}>
-                      <td>{item.contact_id}</td>
+                    <tr key={item.feedback_id}>
+                      <td>{item.feedback_id}</td>
                       <td>
-                        {item.first_name} {item.last_name}
+                        {item.user}
                       </td>
-                      <td>{item.email}</td>
-                      <td>{item.phone}</td>
-                      <td className="max-w-[250px] truncate">{item.message}</td>
+                      <td>{item.subject}</td>
+                      <td>{item.description}</td>
                       <td>{new Date(item.timestamp).toLocaleString()}</td>
                       <td className="text-center">
                         <button
@@ -215,7 +213,7 @@ const Contacts = () => {
         <div className="grid xl:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-6 mt-5">
           {filteredItems.map((item) => (
             <div
-              key={item.contact_id}
+              key={item.feedback_id}
               className="bg-white dark:bg-[#1c232f] rounded-md p-5 shadow text-center relative"
             >
               <h4 className="text-lg font-semibold mb-2">
@@ -296,4 +294,4 @@ const Contacts = () => {
   );
 };
 
-export default Contacts;
+export default FeedbackListNew;

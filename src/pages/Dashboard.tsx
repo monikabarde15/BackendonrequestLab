@@ -21,19 +21,36 @@ import IconBolt from '../components/Icon/IconBolt';
 import IconCaretDown from '../components/Icon/IconCaretDown';
 import IconPlus from '../components/Icon/IconPlus';
 import IconMultipleForwardRight from '../components/Icon/IconMultipleForwardRight';
+import Message from "../pages/MessagesList";
 
 
 interface DashboardProps {
   userId: string | number;
 }
 
-const Index: React.FC<DashboardProps> = ({ userId }) => {
+const Dashboard: React.FC<DashboardProps> = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState<number[]>([0, 0]);
   const [revenueChart, setRevenueChart] = useState<any>({
-    series: [{ name: "Revenue", data: [0, 0] }],
-    options: { chart: { id: "revenue-chart" }, xaxis: { categories: ["Payments", "Instances"] } },
-  });
+  series: [
+    {
+      name: "Count",
+      data: [0, 0],  // Initial data
+    },
+  ],
+  options: {
+    chart: {
+      id: "revenue-chart",
+      toolbar: {
+        show: true,
+      },
+    },
+    colors: ['#22C55E', '#EF4444'], // Green for Payments, Red for Instances
+    xaxis: {
+      categories: ["Payments", "Instances"],
+    },
+  },
+});
     const isDark = useSelector((state: IRootState) => state.themeConfig.theme === 'dark' || state.themeConfig.isDarkMode);
 
 
@@ -46,62 +63,113 @@ const Index: React.FC<DashboardProps> = ({ userId }) => {
 
   console.log("user=",user);
   const accessToken = getCookie("access");
+const refreshAccessToken = async () => {
+  try {
+    const refreshToken = getCookie('refresh');
+    const response = await fetch('https://dev.backend.onrequestlab.com/api/v1/token/refresh/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+    const data = await response.json();
+    if (data.access) {
+      document.cookie = `access=${data.access}; path=/`;
+      return data.access;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to refresh token', err);
+    return null;
+  }
+};
 
-  const colors = [
-  'rgba(52,152,219,0.7)',   // Users - blue
-  'rgba(46,204,113,0.7)',   // Support - green
-  'rgba(231,76,60,0.7)',    // Payments - red
-  'rgba(155,89,182,0.7)',   // Instances - purple
-  'rgba(241,196,15,0.7)',   // Feedback - yellow
-  'rgba(230,126,34,0.7)',   // Contact - orange
-];
-
-// Apna apis array define karo
-const apis = [
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/users/count', name: 'Users' },
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/support/count', name: 'Support' },
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/payments/count', name: 'Payments' },
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/instances/count', name: 'Instances' },
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/feedback/count', name: 'Feedback' },
-  { url: 'https://backend.onrequestlab.com/api/v1/admin/contact/count', name: 'Contact' },
-];
-
-// Sabhi API se data fetch karo aur ek array me store karo
-useEffect(() => {
+  useEffect(() => {
   const fetchCounts = async () => {
     setLoading(true);
+    let token = accessToken;
+    if (!token) {
+      token = await refreshAccessToken(); // async function call
+      if (!token) return; // token refresh fail → exit
+    }
+    const apis = [
+      { url: `https://backend.onrequestlab.com/api/v1/users/payments/count/${user}/`, name: 'Payments' },
+        { url: `https://backend.onrequestlab.com/api/v1/lab/userinst/count/${user}/`, name: 'Instances' }
+    ];
+
+    const colors = [
+      'rgba(52,152,219,0.7)',
+      'rgba(46,204,113,0.7)',
+      'rgba(231,76,60,0.7)',
+      'rgba(155,89,182,0.7)',
+      'rgba(241,196,15,0.7)',
+      'rgba(230,126,34,0.7)'
+    ];
+
+    const borderColors = colors.map(c => c.replace('0.7', '1'));
+
     try {
       const results = await Promise.all(
         apis.map(async (api) => {
-          const res = await fetch(api.url, {
-            headers: { Authorization: 'Bearer ' + accessToken },
-          });
-          const data = await res.json();
-          return { name: api.name, count: data.count ?? 0 };
+          try {
+            const res = await fetch(api.url, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const data = await res.json();
+            return data.count ?? 0;
+          } catch {
+            return 0;
+          }
         })
       );
-      setCounts(results); // results ek array hai: [{ name: 'Users', count: 5 }, ...]
 
-      // Chart ke liye labels aur data array banao
-      const chartLabels = results.map(item => item.name);
-      const chartData = results.map(item => item.count);
+      setCounts(results);
 
-      // Chart data update karo
+      // Update ApexChart data
       setRevenueChart({
-        ...revenueChart,
-        series: [{ name: 'Total Count', data: chartData}],
-        options: {
-          ...revenueChart.options,
-          xaxis: { categories: chartLabels },
-          colors: colors,
-        },
-      });
+  ...revenueChart,
+  series: [
+    {
+      name: "Count",
+      data: results, // results is array like [paymentsCount, instancesCount]
+    },
+  ],
+  options: {
+    ...revenueChart.options,
+    colors: ['#22C55E', '#EF4444'], // Ensure colors are explicitly set here as well
+  },
+});
+
+      // Chart.js bar chart for progressChart canvas
+      const ctx = document.getElementById("progressChart") as HTMLCanvasElement;
+      if (ctx) {
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: apis.map((a) => a.name),
+            datasets: [
+              {
+                label: "Total Count",
+                data: results,
+                backgroundColor: colors,
+                borderColor: borderColors,
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } },
+          },
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
   fetchCounts();
 }, [userId, accessToken]);
 
@@ -1016,8 +1084,10 @@ useEffect(() => {
                     </div>
                 </div>*/}
             </div>
+            <Message />
+
         </div>
   );
 };
 
-export default Index;
+export default Dashboard;
