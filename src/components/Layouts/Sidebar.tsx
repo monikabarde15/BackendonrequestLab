@@ -149,7 +149,16 @@ const menuItems: MenuItem[] = [
       },
     ],
   },
+  
 ];
+if (userID < 2) {
+  menuItems.push({
+    sectionLabel: "Blog Management",
+    items: [
+      { path: "/blogs", label: "Blogs", icon: IconMenuContacts, permission: "blogs" },
+    ],
+  });
+} 
 
 // Conditional support section
 if (userID < 2) {

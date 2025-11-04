@@ -85,7 +85,7 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="#contact" className="hover:text-white">
+              <a href="contact-us" className="hover:text-white">
                 Contact Us
               </a>
             </li>
@@ -97,12 +97,12 @@ const Footer = () => {
           <h3 className="font-semibold mb-4 text-white">Resources</h3>
           <ul className="space-y-2 text-gray-400 text-sm">
           <li>
-             <a href="#pricing" className="hover:text-white">
+             <a href="pricing" className="hover:text-white">
                 Pricing
               </a>
             </li>
             <li>
-              <a href="#" className="hover:text-white">
+              <a href="blog-all" className="hover:text-white">
                 Blog
               </a>
             </li>
@@ -119,12 +119,12 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="terms" className="hover:text-white">
+              <a href="terms-and-conditions" className="hover:text-white">
                 Terms and Condition
               </a>
             </li>
             <li>
-              <a href="refunds" className="hover:text-white">
+              <a href="refund-policy" className="hover:text-white">
                 Refund Policy
               </a>
             </li>

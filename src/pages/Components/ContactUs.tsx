@@ -249,7 +249,7 @@ const ContactUs = () => {
             </div>
             <div>
               <div className="contactus-info-label">Email</div>
-              <div className="contactus-info-text">hello@prismdigital.com</div>
+              <div className="contactus-info-text">support@onrequestlab.com</div>
             </div>
           </div>
 
@@ -302,14 +302,15 @@ const ContactUs = () => {
 
           {/* Ready to Get Started Card */}
           <div className="ready-card">
-            <h3 className="ready-card-title">Ready to Get Started?</h3>
+            <h3 className="ready-card-title">Signup</h3>
             <p className="ready-card-text">
               Join 250+ companies already growing with PrismDigital. Let's discuss
               how we can help your business thrive.
             </p>
+            <a href="auth/boxed-signup">
             <button className="ready-card-btn">
               Schedule a Free Consultation
-            </button>
+            </button></a>
           </div>
         </motion.div>
       </div>

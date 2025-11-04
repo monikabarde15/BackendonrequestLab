@@ -4,6 +4,8 @@ const Index = lazy(() => import('../pages/Index'));
 const Overview = lazy(() => import('../pages/Dashboard'));
 const MessagesList = lazy(() => import('../pages/MessagesList'));
 const AdminMessages = lazy(() => import('../pages/AdminMessages'));
+const BlogAdmin = lazy(() => import('../pages/BlogAdmin'));
+
 
 const ChangePasswordPortal = lazy(() => import('../pages/ChangePassword'));
 
@@ -139,10 +141,13 @@ const Clipboard = lazy(() => import('../pages/Forms/Clipboard'));
 const Otp = lazy(() => import('../pages/Authentication/Otp'));
 
 const Home = lazy(() => import('../pages/websites/Home'));
+const Pricing = lazy(() => import('../pages/Components/Pricing'));
 const PrivacyPolicy = lazy(() => import('../pages/Components/PrivacyPolicy'));
+const ContactPage = lazy(() => import('../pages/Components/ContactPage'));
 const TermsCondition = lazy(() => import('../pages/Components/TermsCondition'));
 const RefoundPolicy = lazy(() => import('../pages/Components/RefoundPolicy'));
-
+const BlogList = lazy(() => import('../pages/BlogList'));
+const BlogDetail = lazy(() => import('../pages/BlogDetail'));
 const routes = [
     // dashboard
      {
@@ -165,13 +170,33 @@ const routes = [
         layout:'web',
     },
     {
-        path: '/terms',
+        path: '/contact-us',
+        element: <ContactPage />,
+        layout:'web',
+    },
+     {
+        path: '/pricing',
+        element: <Pricing />,
+        layout:'web',
+    },
+    {
+        path: '/terms-and-conditions',
         element: <TermsCondition />,
         layout:'web',
     },
     {
-        path: '/refunds',
+        path: '/refund-policy',
         element: <RefoundPolicy />,
+        layout:'web',
+    },
+    {
+        path: '/blog-all',
+        element: <BlogList />,
+        layout:'web',
+    },
+    {
+        path: '/blog-detail/:id',
+        element: <BlogDetail />,
         layout:'web',
     },
      {
@@ -185,6 +210,10 @@ const routes = [
     {
         path: '/AdminMessages',
          element: <AdminMessages />,
+    },
+     {
+        path: '/blogs',
+         element: <BlogAdmin />,
     },
     {
         path: '/change-password',

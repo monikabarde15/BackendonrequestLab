@@ -27,9 +27,9 @@ const HeroSection = () => {
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 200 }}
             >
-              <span className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold">
+             <a href="#pricing"> <span className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold">
                 Red Hat Cluster Lab
-              </span>
+              </span></a>
             </motion.div>
 
             <motion.h1
@@ -59,6 +59,7 @@ const HeroSection = () => {
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 1 }}
             >
+            <a href="#contact">
               <motion.button
                 whileHover={{ scale: 1.05, backgroundColor: "#632aff" }}
                 whileTap={{ scale: 0.95 }}
@@ -69,8 +70,8 @@ const HeroSection = () => {
                   →
                 </span>
               </motion.button>
-
-              <motion.button
+            </a>
+             <a href="#Portfilo"> <motion.button
                 whileHover={{
                   scale: 1.05,
                   backgroundColor: "rgba(131,88,255,0.2)",
@@ -79,7 +80,7 @@ const HeroSection = () => {
                 className="flex items-center px-8 py-3 bg-transparent border-2 border-[#8358ff] text-white font-bold rounded-xl shadow-lg transition-all text-lg"
               >
                 View Our Work
-              </motion.button>
+              </motion.button></a>
             </motion.div>
 
             {/* Stats */}

@@ -77,9 +77,9 @@ const Navbar = () => {
 
           <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="pricing">Pricing</a></li>
             <li><a href="#process">Process</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="contact-us">Contact</a></li>
           </ul>
 
           {isLoggedIn ? (
@@ -98,9 +98,9 @@ const Navbar = () => {
         <div className="navbar-actions">
           <ul className="navbar-links">
             <li><a href="/">Home</a></li>
-            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="pricing">Pricing</a></li>
             <li><a href="#process">Process</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="contact-us">Contact</a></li>
           </ul>
 
           {isLoggedIn ? (

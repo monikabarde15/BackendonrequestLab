@@ -60,7 +60,7 @@ const stories = [
 ];
 
 const Portfilo = () => (
-  <section className="bg-[#0E0A1F] text-white py-24 px-2 md:px-6">
+  <section className="bg-[#0E0A1F] text-white py-24 px-2 md:px-6" id="Portfilo" >
     <div className=" mb-12">
       {/* <h5 className="text-sm font-semibold text-purple-400 tracking-wider mb-2">PORTFOLIO</h5> */}
       <h2 className="text-center text-4xl md:text-5xl font-extrabold mb-4">
