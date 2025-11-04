@@ -134,9 +134,9 @@ const HeroSection = () => {
               }}
               className="absolute top-8 -left-4 p-4 bg-[#2e254d] bg-opacity-90 backdrop-blur-lg border border-primary/20 rounded-lg shadow-xl"
             >
-              <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8358ff] to-[#39c6fa]">
+              {/*<div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8358ff] to-[#39c6fa]">
                 5x ROI
-              </div>
+              </div>*/}
               <div className="text-sm text-[#bfc0c4]">Average Client Return</div>
             </motion.div>
 
