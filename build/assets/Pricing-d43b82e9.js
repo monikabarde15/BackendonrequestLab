@@ -1,0 +1,1 @@
+import{j as o,a as r}from"./index-8c252e2a.js";import{N as a,F as s}from"./Footer-0e31e5a8.js";import{C as t}from"./ClusterLabCard-35f63f05.js";import"./MessagesList-19022cd3.js";const n=()=>o("div",{style:{minHeight:"100vh",background:"#140f1c"},children:[r(a,{}),r(t,{}),r(s,{})]});export{n as default};

@@ -271,7 +271,7 @@ const ContactUs = () => {
             </div>
             <div>
               <div className="contactus-info-label">Phone</div>
-              <div className="contactus-info-text">+1 (555) 123-4567</div>
+              <div className="contactus-info-text">+91 (838) 309-7074</div>
             </div>
           </div>
 
@@ -295,7 +295,7 @@ const ContactUs = () => {
             <div>
               <div className="contactus-info-label">Office</div>
               <div className="contactus-info-text">
-                123 Marketing Street, Digital City, DC 12345
+                NO.95, 9th Cross, kaveri Block Sai Shakthi Layout, Mylasandra, Bangalore -560068
               </div>
             </div>
           </div>

@@ -23,14 +23,14 @@ const HeroSection = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="space-y-8 text-white"
           >
-            <motion.div
+           {/* <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 200 }}
             >
              <a href="#pricing"> <span className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold">
                 Red Hat Cluster Lab
               </span></a>
-            </motion.div>
+            </motion.div>*/}
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -134,10 +134,13 @@ const HeroSection = () => {
               }}
               className="absolute top-8 -left-4 p-4 bg-[#2e254d] bg-opacity-90 backdrop-blur-lg border border-primary/20 rounded-lg shadow-xl"
             >
+            
               {/*<div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#8358ff] to-[#39c6fa]">
                 5x ROI
               </div>*/}
-              <div className="text-sm text-[#bfc0c4]">Average Client Return</div>
+              <div className="text-sm text-[#bfc0c4]"><a href="#pricing"> <span className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-white text-sm font-semibold">
+                Red Hat Cluster Lab
+              </span></a></div>
             </motion.div>
 
             <motion.div
@@ -159,7 +162,7 @@ const HeroSection = () => {
                   </span>
                 ))}
               </div>
-              <div className="text-sm text-[#bfc0c4]">Industry Recognition</div>
+              <div className="text-sm text-[#bfc0c4]">Rating</div>
             </motion.div>
           </motion.div>
         </div>

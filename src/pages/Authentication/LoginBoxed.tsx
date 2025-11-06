@@ -13,22 +13,16 @@ import IconLockDots from "../../components/Icon/IconLockDots";
 const LoginBoxed = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const themeConfig =
-    useSelector((state: IRootState) => state.themeConfig) || {};
+  const themeConfig = useSelector((state: IRootState) => state.themeConfig) || {};
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [showForgotModal, setShowForgotModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
-  const [emailError, setEmailError] = useState("");
 
-  // Forgot password modal states
+  const [showForgotModal, setShowForgotModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState("");
 
   useEffect(() => {
     dispatch(setPageTitle("Login Boxed"));
@@ -41,7 +35,7 @@ const LoginBoxed = () => {
     setLoading(true);
 
     if (!username.trim() || !password.trim()) {
-      setError("Please fill in all fields.");
+      toast.error("Please fill in all fields.", { position: "top-center" });
       setLoading(false);
       return;
     }
@@ -55,14 +49,14 @@ const LoginBoxed = () => {
 
       const data = response.data;
       if (data.user) {
-        // Save to cookies
+        // Save cookies
         document.cookie = `username=${encodeURIComponent(data.user.username)}; path=/; max-age=86400`;
         document.cookie = `user_id=${encodeURIComponent(data.user.id)}; path=/; max-age=86400`;
         document.cookie = `email=${encodeURIComponent(data.user.email)}; path=/; max-age=86400`;
         document.cookie = `is_staff=${data.user.is_staff}; path=/; max-age=86400`;
         document.cookie = `access=${data.access}; path=/; max-age=86400`;
 
-        // Save to localStorage
+        // Save localStorage
         localStorage.setItem("jwt-auth", data.access);
         localStorage.setItem("userId", data.user.id);
         localStorage.setItem("email", data.user.email);
@@ -80,28 +74,39 @@ const LoginBoxed = () => {
       }
     } catch (err: any) {
       let msg = "Invalid username or password.";
+
       if (err.response?.data) {
         const data = err.response.data;
-        if (data.detail) msg = data.detail;
+
+        // ✅ Handle email verification error
+        if (data.non_field_errors && data.non_field_errors[0]?.includes("verify your email")) {
+          msg = (
+            <span>
+              {data.non_field_errors[0]}{" "}
+              <Link to="/otp" className="text-blue-500 underline">
+                Verify OTP
+              </Link>
+            </span>
+          );
+        } else if (data.detail) msg = data.detail;
         else if (data.error) msg = data.error;
         else if (typeof data === "object") {
           const firstKey = Object.keys(data)[0];
           if (Array.isArray(data[firstKey])) msg = data[firstKey][0];
         }
       }
-      setError(msg);
-      toast.error(msg, { position: "top-center" });
+
+      setError(msg as string);
+      toast.error(msg, { position: "top-center", autoClose: 4000 });
     } finally {
       setLoading(false);
     }
   };
 
   // ✅ FORGOT PASSWORD HANDLER
-  const handleForgotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResetError("");
+  const handleForgotSubmit = async () => {
     if (!resetEmail.trim()) {
-      setResetError("Please enter your email address.");
+      toast.error("Please enter your email address.", { position: "top-center" });
       return;
     }
 
@@ -115,8 +120,8 @@ const LoginBoxed = () => {
 
       const message = response.data.detail || "Reset link sent successfully!";
       toast.success(message, { position: "top-center" });
-      setShowForgotModal(false);
       setResetEmail("");
+      setShowForgotModal(false);
     } catch (err: any) {
       let msg = "Something went wrong!";
       if (err.response?.data) {
@@ -124,46 +129,9 @@ const LoginBoxed = () => {
         if (data.email) msg = data.email[0];
         else if (data.detail) msg = data.detail;
       }
-      setResetError(msg);
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
-  // 🔁 RESEND OTP HANDLER
-  const handleResendOTP = async () => {
-    if (!email.trim()) {
-      toast.error("Please enter your email first.", { position: "top-center" });
-      return;
-    }
-
-    setResending(true);
-    try {
-      const response = await axios.post(
-        "https://backend.onrequestlab.com/api/v1/users/auth/resend-otp/",
-        { email },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      const msg =
-        response.data?.message ||
-        response.data?.detail ||
-        "OTP resent successfully!";
-
-      toast.success(msg, { position: "top-center" });
-
-      setTimeout(() => {
-        navigate("/otp");
-      }, 1200);
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        err.response?.data?.detail ||
-        "Failed to resend OTP.";
       toast.error(msg, { position: "top-center" });
     } finally {
-      setResending(false);
+      setResetLoading(false);
     }
   };
 
@@ -190,90 +158,89 @@ const LoginBoxed = () => {
                 </p>
               </div>
 
-              <form className="space-y-5 dark:text-white" onSubmit={submitForm}>
-                <div>
-                  <label>{i18next.t("Username or Email")}</label>
-                  <div className="relative text-white-dark">
-                    <input
-                      type="text"
-                      placeholder={i18next.t("Enter username or email")}
-                      className={`form-input ps-10 placeholder:text-white-dark ${
-                        error.toLowerCase().includes("username") ? "border-red-500" : ""
-                      }`}
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                      <IconMail fill={true} />
-                    </span>
+              {/* LOGIN FORM */}
+              {!showForgotModal && (
+                <form className="space-y-5 dark:text-white" onSubmit={submitForm}>
+                  <div>
+                    <label>{i18next.t("Username or Email")}</label>
+                    <div className="relative text-white-dark">
+                      <input
+                        type="text"
+                        placeholder={i18next.t("Enter username or email")}
+                        className={`form-input ps-10 placeholder:text-white-dark`}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                      <span className="absolute start-4 top-1/2 -translate-y-1/2">
+                        <IconMail fill={true} />
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label>{i18next.t("Password")}</label>
-                  <div className="relative text-white-dark">
-                    <input
-                      type="password"
-                      placeholder={i18next.t("Enter password")}
-                      className={`form-input ps-10 placeholder:text-white-dark ${
-                        error.toLowerCase().includes("password") ? "border-red-500" : ""
-                      }`}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                      <IconLockDots fill={true} />
-                    </span>
+                  <div>
+                    <label>{i18next.t("Password")}</label>
+                    <div className="relative text-white-dark">
+                      <input
+                        type="password"
+                        placeholder={i18next.t("Enter password")}
+                        className={`form-input ps-10 placeholder:text-white-dark`}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <span className="absolute start-4 top-1/2 -translate-y-1/2">
+                        <IconLockDots fill={true} />
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* 📧 Email Field for Resend OTP */}
-                <div>
-                  <label>{i18next.t("Email (for OTP verification)")}</label>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn btn-gradient !mt-6 w-full uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
+                  >
+                    {loading ? "Signing in..." : "Sign in"}
+                  </button>
+
+                  <p
+                    className="text-primary text-center mt-3 cursor-pointer hover:underline"
+                    onClick={() => setShowForgotModal(true)}
+                  >
+                    Forgot Password?
+                  </p>
+                </form>
+              )}
+
+              {/* FORGOT PASSWORD FORM */}
+              {showForgotModal && (
+                <div className="space-y-4">
                   <input
                     type="email"
-                    placeholder="Enter your registered email"
-                    className={`form-input placeholder:text-gray-400 ${
-                      emailError ? "border-red-500" : ""
-                    }`}
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setEmailError("");
-                    }}
+                    placeholder="Enter your email"
+                    className="form-input w-full"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
                   />
-                </div>
-
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-gradient !mt-6 w-full uppercase shadow-[0_10px_20px_-10px_rgba(67,97,238,0.44)]"
-                >
-                  {loading ? "Signing in..." : "Sign in"}
-                </button>
-
-                {/* 🔁 Resend OTP Button */}
-                <div className="text-center mt-4">
                   <button
                     type="button"
-                    disabled={resending}
-                    onClick={handleResendOTP}
-                    className="text-primary underline text-sm hover:text-black dark:hover:text-white"
+                    onClick={handleForgotSubmit}
+                    disabled={resetLoading}
+                    className={`btn btn-gradient w-full ${
+                      resetLoading ? "opacity-60 cursor-not-allowed" : ""
+                    }`}
                   >
-                    {resending ? "Resending..." : "Resend OTP"}
+                    {resetLoading ? "Sending..." : "Send Reset Link"}
                   </button>
+                  <p
+                    className="text-center text-primary cursor-pointer mt-2 hover:underline"
+                    onClick={() => setShowForgotModal(false)}
+                  >
+                    Back to Login
+                  </p>
                 </div>
+              )}
 
-                {/* 🔐 Forgot Password Link */}
-                <p
-                  className="text-primary text-center mt-3 cursor-pointer hover:underline"
-                  onClick={() => setShowForgotModal(true)}
-                >
-                  Forgot Password?
-                </p>
-              </form>
             </div>
 
             <div className="text-center mt-6 dark:text-white">
@@ -288,44 +255,6 @@ const LoginBoxed = () => {
           </div>
         </div>
       </div>
-
-      {/* 🔒 Forgot Password Modal */}
-      {showForgotModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-md relative">
-            <button
-              onClick={() => setShowForgotModal(false)}
-              className="absolute top-2 right-3 text-gray-600 text-lg"
-            >
-              ✕
-            </button>
-            <h2 className="text-2xl font-bold mb-4 text-center text-primary">
-              Reset Password
-            </h2>
-            <form onSubmit={handleForgotSubmit} className="space-y-4">
-              <input
-                type="email"
-                placeholder="Enter your registered email"
-                className={`form-input w-full ${resetError ? "border-red-500" : ""}`}
-                value={resetEmail}
-                onChange={(e) => {
-                  setResetEmail(e.target.value);
-                  if (resetError) setResetError("");
-                }}
-              />
-              {resetError && <p className="text-red-500 text-sm">{resetError}</p>}
-
-              <button
-                type="submit"
-                disabled={resetLoading}
-                className="btn btn-primary w-full"
-              >
-                {resetLoading ? "Sending..." : "Send Reset Link"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       <ToastContainer autoClose={2000} theme="colored" />
     </div>

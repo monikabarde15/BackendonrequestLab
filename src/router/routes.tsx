@@ -148,6 +148,10 @@ const TermsCondition = lazy(() => import('../pages/Components/TermsCondition'));
 const RefoundPolicy = lazy(() => import('../pages/Components/RefoundPolicy'));
 const BlogList = lazy(() => import('../pages/BlogList'));
 const BlogDetail = lazy(() => import('../pages/BlogDetail'));
+const PageOfferService = lazy(() => import('../pages/Components/PageOfferService'));
+const LabDashboard = lazy(() => import('../pages/Components/LabDashboard'));
+
+
 const routes = [
     // dashboard
      {
@@ -194,9 +198,19 @@ const routes = [
         element: <BlogList />,
         layout:'web',
     },
+     {
+        path: '/lab',
+        element: <LabDashboard />,
+        layout:'web',
+    },
     {
         path: '/blog-detail/:id',
         element: <BlogDetail />,
+        layout:'web',
+    },
+    {
+        path: '/process',
+        element: <PageOfferService />,
         layout:'web',
     },
      {

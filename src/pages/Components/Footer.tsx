@@ -102,6 +102,11 @@ const Footer = () => {
               </a>
             </li>
             <li>
+              <a href="process" className="hover:text-white">
+                Process
+              </a>
+            </li>
+            <li>
               <a href="blog-all" className="hover:text-white">
                 Blog
               </a>
