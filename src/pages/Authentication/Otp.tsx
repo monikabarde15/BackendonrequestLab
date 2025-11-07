@@ -19,13 +19,14 @@ const OtpVerification = () => {
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
     return null;
   };
 
+  // ✅ Load email from cookie on mount
   useEffect(() => {
     const cookieEmail = getCookie("email");
-    if (cookieEmail) setEmail(cookieEmail);
+    if (cookieEmail) setEmail(decodeURIComponent(cookieEmail));
   }, []);
 
   // ✅ Handle sending/resending OTP
@@ -39,16 +40,21 @@ const OtpVerification = () => {
     try {
       const response = await axios.post(
         "https://backend.onrequestlab.com/api/v1/users/auth/resend-otp/",
-        { email },
+        { email }, // ✅ Correct key
         { headers: { "Content-Type": "application/json" } }
       );
 
-      toast.success(response.data?.message || "OTP has been sent!", { position: "top-center" });
-      setShowOtpInput(true); // Show OTP input after sending
+      toast.success(response.data?.message || "OTP has been sent!", {
+        position: "top-center",
+      });
+      setShowOtpInput(true);
       setOtpExpired(false);
       setOtp("");
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data?.error || "Failed to send OTP.";
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Failed to send OTP.";
       toast.error(msg, { position: "top-center" });
     } finally {
       setResending(false);
@@ -75,7 +81,7 @@ const OtpVerification = () => {
     try {
       const response = await axios.post(
         "https://backend.onrequestlab.com/api/v1/users/auth/verify-otp/",
-        { email, otp },
+        { email, otp }, // ✅ Correct key
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -83,10 +89,12 @@ const OtpVerification = () => {
       setOtpExpired(false);
       setTimeout(() => navigate("/login"), 1200);
     } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data?.error || "OTP verification failed.";
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "OTP verification failed.";
       toast.error(msg, { position: "top-center" });
 
-      // Show Resend OTP section if OTP is expired or missing
       setOtpExpired(true);
       setShowOtpInput(false);
     } finally {
@@ -105,7 +113,7 @@ const OtpVerification = () => {
         {showOtpInput ? (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-              OTP sent to <b>{decodeURIComponent(email)}</b>
+              OTP sent to <b>{email}</b>
             </p>
             <input
               type="text"
